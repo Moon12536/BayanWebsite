@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Bayan Owner Panel</title>
+
+    <link rel="stylesheet" href="/style.css">
+
+    <style>
+        .owner-panel {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .owner-card {
+            padding: 30px;
+            margin-bottom: 18px;
+            border: 1px solid #292d38;
+            border-radius: 16px;
+            background: #101219;
+        }
+
+        .owner-card h3 {
+            margin-bottom: 10px;
+        }
+
+        .owner-card p {
+            color: #858a98;
+            font-size: 14px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 13px 15px;
+            border: 1px solid #30333d;
+            border-radius: 9px;
+            background: #171922;
+            color: white;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #5865f2;
+        }
+
+        .full {
+            grid-column: 1 / -1;
+        }
+
+        .owner-status {
+            margin-top: 18px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #171922;
+            color: #aeb2c0;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <div class="logo">
+            <div class="logo-icon">B</div>
+            <span>Bayan</span>
+        </div>
+
+        <div class="nav-actions">
+            <a href="/" class="secondary-btn">Home</a>
+            <a href="/dashboard" class="secondary-btn">Dashboard</a>
+            <a href="/logout" class="dashboard-btn">Logout</a>
+        </div>
+
+    </nav>
+
+
+    <main class="section">
+
+        <div class="section-heading">
+
+            <span class="section-label">
+                OWNER PANEL
+            </span>
+
+            <h1>
+                Premium Management
+            </h1>
+
+            <p>
+                Manage Premium access for Bayan servers.
+                Only the Bayan owner can use this panel.
+            </p>
+
+        </div>
+
+
+        <div class="owner-panel">
+
+            <div class="owner-card">
+
+                <h3>
+                    Grant Premium
+                </h3>
+
+                <p>
+                    Give a server Premium access for a specific
+                    duration or lifetime.
+                </p>
+
+
+                <div class="form-grid">
+
+                    <input
+                        id="guildId"
+                        class="form-input full"
+                        type="text"
+                        placeholder="Discord Server ID"
+                    >
+
+
+                    <select
+                        id="duration"
+                        class="form-input"
+                    >
+                        <option value="7">7 Days</option>
+                        <option value="30">30 Days</option>
+                        <option value="90">90 Days</option>
+                        <option value="lifetime">Lifetime</option>
+                    </select>
+
+
+                    <button
+                        class="primary-btn"
+                        onclick="grantPremium()"
+                    >
+                        Grant Premium
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="grantStatus"
+                    class="owner-status"
+                >
+                    Ready.
+                </div>
+
+            </div>
+
+
+            <div class="owner-card">
+
+                <h3>
+                    Check Premium
+                </h3>
+
+                <p>
+                    Check whether a server currently has Premium.
+                </p>
+
+
+                <div class="form-grid">
+
+                    <input
+                        id="checkGuildId"
+                        class="form-input"
+                        type="text"
+                        placeholder="Discord Server ID"
+                    >
+
+                    <button
+                        class="primary-btn"
+                        onclick="checkPremium()"
+                    >
+                        Check Status
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="checkStatus"
+                    class="owner-status"
+                >
+                    No server checked.
+                </div>
+
+            </div>
+
+
+            <div class="owner-card">
+
+                <h3>
+                    Remove Premium
+                </h3>
+
+                <p>
+                    Remove Premium access from a server.
+                </p>
+
+
+                <div class="form-grid">
+
+                    <input
+                        id="removeGuildId"
+                        class="form-input"
+                        type="text"
+                        placeholder="Discord Server ID"
+                    >
+
+                    <button
+                        class="secondary-btn"
+                        onclick="removePremium()"
+                    >
+                        Remove Premium
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="removeStatus"
+                    class="owner-status"
+                >
+                    No action taken.
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <footer>
+
+        <div class="footer-logo">
+            Bayan
+        </div>
+
+        <p>
+            Owner Panel
+        </p>
+
+    </footer>
+
+
+    <script>
+
+        async function grantPremium() {
+
+            const guildId =
+                document.getElementById("guildId").value.trim();
+
+            const duration =
+                document.getElementById("duration").value;
+
+            const status =
+                document.getElementById("grantStatus");
+
+
+            if (!guildId) {
+
+                status.textContent =
+                    "Please enter a Discord Server ID.";
+
+                return;
+            }
+
+
+            status.textContent =
+                "Granting Premium...";
+
+
+            try {
+
+                const response =
+                    await fetch("/api/owner/premium/grant", {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            guildId,
+                            duration
+                        })
+
+                    });
+
+
+                const data =
+                    await response.json();
+
+
+                status.textContent =
+                    data.message ||
+                    "Premium updated.";
+
+            } catch (error) {
+
+                status.textContent =
+                    "Something went wrong.";
+
+            }
+
+        }
+
+
+        async function checkPremium() {
+
+            const guildId =
+                document.getElementById("checkGuildId").value.trim();
+
+            const status =
+                document.getElementById("checkStatus");
+
+
+            if (!guildId) {
+
+                status.textContent =
+                    "Please enter a Discord Server ID.";
+
+                return;
+            }
+
+
+            status.textContent =
+                "Checking...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/owner/premium/" +
+                        encodeURIComponent(guildId)
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (data.premium) {
+
+                    if (data.lifetime) {
+
+                        status.textContent =
+                            "Premium is active — Lifetime.";
+
+                    } else {
+
+                        const date =
+                            data.expiresAt
+                                ? new Date(data.expiresAt).toLocaleString()
+                                : "Unknown";
+
+                        status.textContent =
+                            "Premium is active — expires " +
+                            date;
+                    }
+
+                } else {
+
+                    status.textContent =
+                        "This server does not have Premium.";
+
+                }
+
+            } catch (error) {
+
+                status.textContent =
+                    "Unable to check Premium.";
+
+            }
+
+        }
+
+
+        async function removePremium() {
+
+            const guildId =
+                document.getElementById("removeGuildId").value.trim();
+
+            const status =
+                document.getElementById("removeStatus");
+
+
+            if (!guildId) {
+
+                status.textContent =
+                    "Please enter a Discord Server ID.";
+
+                return;
+            }
+
+
+            status.textContent =
+                "Removing Premium...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/owner/premium/" +
+                        encodeURIComponent(guildId),
+                        {
+                            method: "DELETE"
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                status.textContent =
+                    data.message ||
+                    "Premium removed.";
+
+            } catch (error) {
+
+                status.textContent =
+                    "Something went wrong.";
+
+            }
+
+        }
+
+    </script>
+
+</body>
+</html>
