@@ -1,0 +1,2734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Bayan — The Discord Bot Built Different</title>
+    <meta
+        name="description"
+        content="Bayan is a powerful Discord bot for moderation, tickets, giveaways, tournaments, protection and more."
+    >
+
+    <link rel="stylesheet" href="/style.css">
+
+    <style>
+        /* ================================
+           BAYAN LANDING PAGE
+           ================================ */
+
+        :root {
+            --bg: #07070b;
+            --bg-soft: #0c0c12;
+            --card: rgba(18, 18, 27, 0.72);
+            --card-solid: #12121a;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #ffffff;
+            --muted: #9b9baa;
+            --purple: #7c5cff;
+            --purple-light: #a88fff;
+            --blue: #4d8dff;
+            --green: #55d98a;
+            --danger: #ff5d73;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family:
+                Inter,
+                ui-sans-serif,
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background:
+                radial-gradient(
+                    circle at 50% -10%,
+                    rgba(124, 92, 255, 0.20),
+                    transparent 35%
+                ),
+                radial-gradient(
+                    circle at 90% 35%,
+                    rgba(77, 141, 255, 0.08),
+                    transparent 30%
+                ),
+                var(--bg);
+
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        /* ================================
+           BACKGROUND
+           ================================ */
+
+        .background {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -5;
+            overflow: hidden;
+        }
+
+        .grid {
+            position: absolute;
+            inset: 0;
+
+            background-image:
+                linear-gradient(
+                    rgba(255, 255, 255, 0.025) 1px,
+                    transparent 1px
+                ),
+                linear-gradient(
+                    90deg,
+                    rgba(255, 255, 255, 0.025) 1px,
+                    transparent 1px
+                );
+
+            background-size: 55px 55px;
+
+            mask-image: linear-gradient(
+                to bottom,
+                black,
+                transparent 85%
+            );
+        }
+
+        .glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+        }
+
+        .glow-one {
+            background: var(--purple);
+            top: -250px;
+            left: 15%;
+            animation: floatGlow 9s ease-in-out infinite;
+        }
+
+        .glow-two {
+            background: var(--blue);
+            top: 35%;
+            right: -300px;
+            animation: floatGlow 12s ease-in-out infinite reverse;
+        }
+
+        .glow-three {
+            background: #9a5cff;
+            top: 65%;
+            left: -300px;
+            animation: floatGlow 15s ease-in-out infinite;
+        }
+
+        @keyframes floatGlow {
+            0%, 100% {
+                transform: translate3d(0, 0, 0);
+            }
+
+            50% {
+                transform: translate3d(40px, -30px, 0);
+            }
+        }
+
+        /* ================================
+           NAVBAR
+           ================================ */
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+
+            height: 74px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 6%;
+
+            background: rgba(7, 7, 11, 0.68);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 11px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--purple),
+                    #5940e8
+                );
+
+            box-shadow:
+                0 0 25px rgba(124, 92, 255, 0.35);
+        }
+
+        .brand-icon span {
+            font-weight: 900;
+            font-size: 16px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .nav-links a {
+            color: #a9a9b7;
+            font-size: 14px;
+            font-weight: 600;
+
+            transition:
+                color 0.25s ease,
+                transform 0.25s ease;
+        }
+
+        .nav-links a:hover {
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-login {
+            padding: 10px 16px;
+            border-radius: 10px;
+            color: #c7c7d3;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .nav-login:hover {
+            color: white;
+        }
+
+        .nav-add {
+            padding: 10px 16px;
+            border-radius: 10px;
+
+            background: var(--purple);
+
+            font-size: 14px;
+            font-weight: 800;
+
+            box-shadow:
+                0 8px 25px rgba(124, 92, 255, 0.22);
+
+            transition:
+                transform 0.25s ease,
+                box-shadow 0.25s ease;
+        }
+
+        .nav-add:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 12px 35px rgba(124, 92, 255, 0.38);
+        }
+
+        /* ================================
+           HERO
+           ================================ */
+
+        .hero {
+            min-height: 900px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            text-align: center;
+
+            padding:
+                150px
+                20px
+                90px;
+
+            position: relative;
+        }
+
+        .hero-content {
+            width: min(1050px, 100%);
+            margin: auto;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            padding: 8px 13px;
+
+            border: 1px solid rgba(124, 92, 255, 0.28);
+            border-radius: 999px;
+
+            background: rgba(124, 92, 255, 0.08);
+
+            color: #c5b9ff;
+
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+
+            animation:
+                fadeUp 0.8s ease both,
+                badgePulse 3s ease-in-out infinite;
+        }
+
+        .hero-badge-dot {
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+
+            background: #7dffad;
+
+            box-shadow:
+                0 0 12px rgba(125, 255, 173, 0.8);
+        }
+
+        @keyframes badgePulse {
+            0%, 100% {
+                box-shadow: 0 0 0 rgba(124, 92, 255, 0);
+            }
+
+            50% {
+                box-shadow:
+                    0 0 35px rgba(124, 92, 255, 0.10);
+            }
+        }
+
+        .hero h1 {
+            margin-top: 28px;
+
+            font-size:
+                clamp(
+                    54px,
+                    8vw,
+                    104px
+                );
+
+            line-height: 0.96;
+            letter-spacing: -5px;
+            font-weight: 900;
+
+            animation:
+                fadeUp 0.9s 0.1s ease both;
+        }
+
+        .gradient-text {
+            background:
+                linear-gradient(
+                    100deg,
+                    #ffffff 10%,
+                    #a996ff 45%,
+                    #6e8dff 75%,
+                    #ffffff 100%
+                );
+
+            background-size: 250% auto;
+
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+
+            animation:
+                gradientMove 5s linear infinite;
+        }
+
+        @keyframes gradientMove {
+            to {
+                background-position: 250% center;
+            }
+        }
+
+        .hero-subtitle {
+            max-width: 700px;
+            margin: 28px auto 0;
+
+            color: #a8a8b6;
+
+            font-size: 18px;
+            line-height: 1.7;
+
+            animation:
+                fadeUp 0.9s 0.2s ease both;
+        }
+
+        .hero-buttons {
+            margin-top: 35px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+
+            animation:
+                fadeUp 0.9s 0.3s ease both;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+
+            min-height: 48px;
+            padding: 0 22px;
+
+            border-radius: 12px;
+
+            font-size: 14px;
+            font-weight: 800;
+
+            transition:
+                transform 0.25s ease,
+                box-shadow 0.25s ease,
+                border-color 0.25s ease;
+        }
+
+        .button-primary {
+            background: var(--purple);
+
+            box-shadow:
+                0 10px 35px rgba(124, 92, 255, 0.25);
+        }
+
+        .button-primary:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                0 15px 45px rgba(124, 92, 255, 0.42);
+        }
+
+        .button-secondary {
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.035);
+            color: #dddde7;
+        }
+
+        .button-secondary:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.16);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* ================================
+           HERO DASHBOARD PREVIEW
+           ================================ */
+
+        .hero-preview {
+            width: min(920px, 100%);
+            margin: 85px auto 0;
+
+            position: relative;
+
+            animation:
+                fadeUp 1s 0.45s ease both;
+        }
+
+        .preview-glow {
+            position: absolute;
+            inset: 10% 10% -10%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(124, 92, 255, 0.30),
+                    rgba(77, 141, 255, 0.22)
+                );
+
+            filter: blur(70px);
+            opacity: 0.55;
+            z-index: -1;
+        }
+
+        .preview-window {
+            overflow: hidden;
+
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 18px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(24, 24, 35, 0.96),
+                    rgba(11, 11, 17, 0.96)
+                );
+
+            box-shadow:
+                0 35px 100px rgba(0, 0, 0, 0.55),
+                0 0 60px rgba(124, 92, 255, 0.08);
+
+            transform:
+                perspective(1300px)
+                rotateX(4deg);
+
+            transition:
+                transform 0.5s ease;
+        }
+
+        .preview-window:hover {
+            transform:
+                perspective(1300px)
+                rotateX(0deg)
+                translateY(-5px);
+        }
+
+        .preview-top {
+            height: 48px;
+
+            display: flex;
+            align-items: center;
+
+            padding: 0 16px;
+
+            border-bottom: 1px solid var(--border);
+
+            background: rgba(255, 255, 255, 0.025);
+        }
+
+        .window-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .window-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.20);
+        }
+
+        .preview-body {
+            display: grid;
+            grid-template-columns: 170px 1fr;
+
+            min-height: 390px;
+        }
+
+        .preview-sidebar {
+            padding: 18px;
+
+            border-right: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.015);
+        }
+
+        .side-logo {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+
+            margin-bottom: 25px;
+
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .side-logo-icon {
+            width: 27px;
+            height: 27px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 8px;
+
+            background: var(--purple);
+
+            font-size: 11px;
+        }
+
+        .side-item {
+            height: 35px;
+
+            display: flex;
+            align-items: center;
+
+            padding: 0 10px;
+            margin-bottom: 5px;
+
+            border-radius: 8px;
+
+            color: #747482;
+
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .side-item.active {
+            color: white;
+            background: rgba(124, 92, 255, 0.15);
+        }
+
+        .preview-main {
+            padding: 25px;
+        }
+
+        .preview-title {
+            font-size: 20px;
+            font-weight: 850;
+        }
+
+        .preview-muted {
+            margin-top: 5px;
+            color: #777785;
+            font-size: 11px;
+        }
+
+        .preview-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+
+            margin-top: 22px;
+        }
+
+        .preview-stat {
+            padding: 16px;
+
+            border: 1px solid var(--border);
+            border-radius: 11px;
+
+            background: rgba(255, 255, 255, 0.025);
+        }
+
+        .preview-stat-label {
+            color: #777785;
+            font-size: 10px;
+        }
+
+        .preview-stat-value {
+            margin-top: 7px;
+            font-size: 20px;
+            font-weight: 850;
+        }
+
+        .preview-panel {
+            margin-top: 15px;
+
+            padding: 17px;
+
+            border: 1px solid var(--border);
+            border-radius: 12px;
+
+            background: rgba(255, 255, 255, 0.025);
+        }
+
+        .preview-panel-title {
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .preview-bar {
+            height: 8px;
+            margin-top: 14px;
+
+            overflow: hidden;
+
+            border-radius: 99px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .preview-bar-fill {
+            width: 76%;
+            height: 100%;
+
+            border-radius: inherit;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    var(--purple),
+                    var(--blue)
+                );
+
+            animation:
+                barPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes barPulse {
+            0%, 100% {
+                width: 65%;
+            }
+
+            50% {
+                width: 82%;
+            }
+        }
+
+        /* ================================
+           STATS
+           ================================ */
+
+        .stats {
+            width: min(1050px, 92%);
+            margin: 0 auto;
+
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat {
+            padding: 35px 15px;
+            text-align: center;
+
+            position: relative;
+        }
+
+        .stat:not(:last-child)::after {
+            content: "";
+
+            position: absolute;
+
+            right: 0;
+            top: 30%;
+
+            width: 1px;
+            height: 40%;
+
+            background: var(--border);
+        }
+
+        .stat-number {
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+
+        .stat-label {
+            margin-top: 5px;
+
+            color: #777785;
+            font-size: 12px;
+        }
+
+        /* ================================
+           SECTIONS
+           ================================ */
+
+        .section {
+            width: min(1120px, 92%);
+            margin: 0 auto;
+            padding: 130px 0;
+        }
+
+        .section-header {
+            max-width: 700px;
+            margin: 0 auto 55px;
+            text-align: center;
+        }
+
+        .section-label {
+            color: #9f8cff;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .section-header h2 {
+            margin-top: 14px;
+
+            font-size:
+                clamp(
+                    35px,
+                    5vw,
+                    56px
+                );
+
+            letter-spacing: -2.5px;
+            line-height: 1.05;
+        }
+
+        .section-header p {
+            margin-top: 16px;
+
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        /* ================================
+           FEATURES
+           ================================ */
+
+        .features-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 15px;
+        }
+
+        .feature {
+            position: relative;
+
+            padding: 27px;
+
+            min-height: 225px;
+
+            border: 1px solid var(--border);
+            border-radius: 17px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(255, 255, 255, 0.045),
+                    rgba(255, 255, 255, 0.015)
+                );
+
+            overflow: hidden;
+
+            transition:
+                transform 0.35s ease,
+                border-color 0.35s ease,
+                background 0.35s ease;
+        }
+
+        .feature::before {
+            content: "";
+
+            position: absolute;
+
+            width: 160px;
+            height: 160px;
+
+            top: -100px;
+            right: -100px;
+
+            border-radius: 50%;
+
+            background: var(--purple);
+
+            filter: blur(65px);
+            opacity: 0;
+
+            transition: opacity 0.35s ease;
+        }
+
+        .feature:hover {
+            transform: translateY(-8px);
+
+            border-color:
+                rgba(124, 92, 255, 0.35);
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(124, 92, 255, 0.08),
+                    rgba(255, 255, 255, 0.025)
+                );
+        }
+
+        .feature:hover::before {
+            opacity: 0.18;
+        }
+
+        .feature-icon {
+            width: 46px;
+            height: 46px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 13px;
+
+            background: rgba(124, 92, 255, 0.12);
+            border: 1px solid rgba(124, 92, 255, 0.18);
+
+            color: #a996ff;
+
+            font-size: 19px;
+            font-weight: 900;
+        }
+
+        .feature h3 {
+            margin-top: 20px;
+
+            font-size: 17px;
+            font-weight: 850;
+        }
+
+        .feature p {
+            margin-top: 9px;
+
+            color: #838390;
+
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        /* ================================
+           PREMIUM
+           ================================ */
+
+        .premium {
+            position: relative;
+
+            padding: 70px 7%;
+
+            border: 1px solid rgba(124, 92, 255, 0.20);
+            border-radius: 25px;
+
+            overflow: hidden;
+
+            background:
+                radial-gradient(
+                    circle at 80% 20%,
+                    rgba(124, 92, 255, 0.16),
+                    transparent 35%
+                ),
+                linear-gradient(
+                    135deg,
+                    rgba(124, 92, 255, 0.10),
+                    rgba(255, 255, 255, 0.025)
+                );
+        }
+
+        .premium::before {
+            content: "";
+
+            position: absolute;
+            width: 400px;
+            height: 400px;
+
+            left: -200px;
+            bottom: -250px;
+
+            border-radius: 50%;
+
+            background: var(--purple);
+
+            filter: blur(100px);
+            opacity: 0.10;
+        }
+
+        .premium-content {
+            position: relative;
+            z-index: 1;
+
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+
+            align-items: center;
+        }
+
+        .premium-badge {
+            display: inline-block;
+
+            padding: 6px 10px;
+
+            border-radius: 7px;
+
+            background: rgba(124, 92, 255, 0.13);
+            color: #b9aaff;
+
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .premium h2 {
+            margin-top: 15px;
+
+            font-size: 45px;
+            line-height: 1.05;
+            letter-spacing: -2px;
+        }
+
+        .premium-description {
+            margin-top: 15px;
+
+            color: #92929f;
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        .premium-list {
+            display: grid;
+            gap: 10px;
+
+            margin-top: 23px;
+        }
+
+        .premium-list div {
+            color: #bfc0ca;
+            font-size: 13px;
+        }
+
+        .premium-list span {
+            color: #7dffad;
+            margin-right: 8px;
+        }
+
+        .premium-visual {
+            min-height: 350px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            position: relative;
+        }
+
+        .premium-orb {
+            width: 230px;
+            height: 230px;
+
+            border-radius: 50%;
+
+            background:
+                radial-gradient(
+                    circle at 35% 30%,
+                    #d0c6ff,
+                    #8b72ff 25%,
+                    #5339e4 60%,
+                    #17112f 100%
+                );
+
+            box-shadow:
+                0 0 80px rgba(124, 92, 255, 0.35),
+                inset -25px -25px 50px rgba(0, 0, 0, 0.25);
+
+            animation:
+                orbFloat 5s ease-in-out infinite;
+        }
+
+        .premium-orb::after {
+            content: "B";
+
+            position: absolute;
+
+            inset: 0;
+
+            display: grid;
+            place-items: center;
+
+            color: white;
+
+            font-size: 85px;
+            font-weight: 950;
+
+            text-shadow:
+                0 0 35px rgba(255, 255, 255, 0.35);
+        }
+
+        @keyframes orbFloat {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-18px) rotate(5deg);
+            }
+        }
+
+        .orb-ring {
+            position: absolute;
+
+            width: 320px;
+            height: 320px;
+
+            border: 1px solid rgba(124, 92, 255, 0.25);
+            border-radius: 50%;
+
+            animation:
+                ringRotate 12s linear infinite;
+        }
+
+        .orb-ring::before,
+        .orb-ring::after {
+            content: "";
+
+            position: absolute;
+
+            width: 9px;
+            height: 9px;
+
+            border-radius: 50%;
+
+            background: #a99aff;
+            box-shadow: 0 0 20px #a99aff;
+        }
+
+        .orb-ring::before {
+            top: 30px;
+            left: 45px;
+        }
+
+        .orb-ring::after {
+            right: 30px;
+            bottom: 55px;
+        }
+
+        @keyframes ringRotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ================================
+           PRICING
+           ================================ */
+
+        .pricing-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 15px;
+        }
+
+        .pricing-card {
+            position: relative;
+
+            padding: 30px;
+
+            border: 1px solid var(--border);
+            border-radius: 18px;
+
+            background:
+                rgba(255, 255, 255, 0.025);
+
+            transition:
+                transform 0.3s ease,
+                border-color 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-7px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .pricing-card.featured {
+            border-color:
+                rgba(124, 92, 255, 0.42);
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(124, 92, 255, 0.11),
+                    rgba(255, 255, 255, 0.025)
+                );
+
+            box-shadow:
+                0 20px 70px rgba(124, 92, 255, 0.10);
+        }
+
+        .popular {
+            position: absolute;
+
+            top: 17px;
+            right: 17px;
+
+            padding: 5px 8px;
+
+            border-radius: 6px;
+
+            background: var(--purple);
+
+            font-size: 9px;
+            font-weight: 900;
+        }
+
+        .pricing-card h3 {
+            font-size: 20px;
+        }
+
+        .pricing-card-description {
+            margin-top: 7px;
+
+            min-height: 40px;
+
+            color: #858592;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .price {
+            margin-top: 25px;
+        }
+
+        .price-value {
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: -2px;
+        }
+
+        .price-period {
+            color: #777783;
+            font-size: 12px;
+        }
+
+        .pricing-features {
+            display: grid;
+            gap: 11px;
+
+            margin: 25px 0;
+            padding-top: 22px;
+
+            border-top: 1px solid var(--border);
+
+            list-style: none;
+        }
+
+        .pricing-features li {
+            color: #a6a6b2;
+            font-size: 12px;
+        }
+
+        .check {
+            color: #7dffad;
+            margin-right: 7px;
+        }
+
+        .pricing-button {
+            width: 100%;
+
+            min-height: 45px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 10px;
+
+            font-size: 12px;
+            font-weight: 850;
+
+            transition:
+                transform 0.25s ease,
+                background 0.25s ease;
+        }
+
+        .pricing-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .pricing-button.primary {
+            background: var(--purple);
+        }
+
+        .pricing-button.secondary {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* ================================
+           FAQ
+           ================================ */
+
+        .faq {
+            max-width: 780px;
+            margin: auto;
+        }
+
+        .faq-item {
+            margin-bottom: 10px;
+
+            border: 1px solid var(--border);
+            border-radius: 13px;
+
+            overflow: hidden;
+
+            background: rgba(255, 255, 255, 0.025);
+        }
+
+        .faq-question {
+            width: 100%;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 20px;
+
+            border: 0;
+            background: transparent;
+
+            color: white;
+
+            text-align: left;
+
+            cursor: pointer;
+
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .faq-plus {
+            color: #858592;
+            font-size: 20px;
+
+            transition:
+                transform 0.3s ease;
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+
+            color: #858592;
+
+            font-size: 12px;
+            line-height: 1.7;
+
+            transition:
+                max-height 0.4s ease;
+        }
+
+        .faq-answer-inner {
+            padding:
+                0 20px
+                20px;
+        }
+
+        .faq-item.open .faq-answer {
+            max-height: 180px;
+        }
+
+        .faq-item.open .faq-plus {
+            transform: rotate(45deg);
+        }
+
+        /* ================================
+           CTA
+           ================================ */
+
+        .cta {
+            width: min(1000px, 92%);
+            margin: 30px auto 120px;
+
+            padding: 75px 25px;
+
+            text-align: center;
+
+            border: 1px solid rgba(124, 92, 255, 0.22);
+            border-radius: 24px;
+
+            background:
+                radial-gradient(
+                    circle at center,
+                    rgba(124, 92, 255, 0.14),
+                    transparent 60%
+                ),
+                rgba(255, 255, 255, 0.02);
+        }
+
+        .cta h2 {
+            font-size:
+                clamp(
+                    35px,
+                    6vw,
+                    58px
+                );
+
+            letter-spacing: -2.5px;
+        }
+
+        .cta p {
+            max-width: 600px;
+            margin: 15px auto 27px;
+
+            color: #888895;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* ================================
+           FOOTER
+           ================================ */
+
+        footer {
+            border-top: 1px solid var(--border);
+
+            padding: 35px 6%;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            color: #666672;
+
+            font-size: 11px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 18px;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        /* ================================
+           SCROLL REVEAL
+           ================================ */
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(35px);
+
+            transition:
+                opacity 0.8s ease,
+                transform 0.8s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(25px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ================================
+           MOBILE
+           ================================ */
+
+        @media (max-width: 900px) {
+            .nav-links {
+                display: none;
+            }
+
+            .preview-body {
+                grid-template-columns: 120px 1fr;
+            }
+
+            .features-grid,
+            .pricing-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .premium-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .navbar {
+                padding: 0 18px;
+            }
+
+            .nav-login {
+                display: none;
+            }
+
+            .hero {
+                min-height: auto;
+                padding-top: 140px;
+            }
+
+            .hero h1 {
+                letter-spacing: -3px;
+            }
+
+            .hero-subtitle {
+                font-size: 15px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .hero-buttons .button {
+                width: min(300px, 100%);
+            }
+
+            .hero-preview {
+                margin-top: 55px;
+            }
+
+            .preview-body {
+                grid-template-columns: 1fr;
+            }
+
+            .preview-sidebar {
+                display: none;
+            }
+
+            .preview-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .stat:nth-child(2)::after {
+                display: none;
+            }
+
+            .features-grid,
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                padding: 90px 0;
+            }
+
+            .premium {
+                padding: 45px 25px;
+            }
+
+            .premium h2 {
+                font-size: 36px;
+            }
+
+            .premium-visual {
+                min-height: 280px;
+            }
+
+            .premium-orb {
+                width: 170px;
+                height: 170px;
+            }
+
+            .premium-orb::after {
+                font-size: 60px;
+            }
+
+            .orb-ring {
+                width: 235px;
+                height: 235px;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- BACKGROUND -->
+    <div class="background">
+        <div class="grid"></div>
+        <div class="glow glow-one"></div>
+        <div class="glow glow-two"></div>
+        <div class="glow glow-three"></div>
+    </div>
+
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+
+        <a href="/" class="brand">
+            <div class="brand-icon">
+                <span>B</span>
+            </div>
+
+            <span>Bayan</span>
+        </a>
+
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#premium">Premium</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#faq">FAQ</a>
+        </div>
+
+        <div class="nav-actions">
+            <a href="/login" class="nav-login">
+                Login
+            </a>
+
+            <a
+                href="/login"
+                class="nav-add"
+            >
+                Add to Discord
+            </a>
+        </div>
+
+    </nav>
+
+
+    <!-- HERO -->
+    <main>
+
+        <section class="hero">
+
+            <div class="hero-content">
+
+                <div class="hero-badge">
+                    <span class="hero-badge-dot"></span>
+                    Powerful Discord Management
+                </div>
+
+                <h1>
+                    Your server.
+                    <br>
+                    <span class="gradient-text">
+                        Upgraded.
+                    </span>
+                </h1>
+
+                <p class="hero-subtitle">
+                    Bayan is a powerful all-in-one Discord bot built
+                    for modern communities. Moderation, tickets,
+                    protection, giveaways, tournaments and more —
+                    all in one place.
+                </p>
+
+                <div class="hero-buttons">
+
+                    <a
+                        href="/login"
+                        class="button button-primary"
+                    >
+                        Add Bayan to Discord
+                        <span>→</span>
+                    </a>
+
+                    <a
+                        href="#features"
+                        class="button button-secondary"
+                    >
+                        Explore Features
+                    </a>
+
+                </div>
+
+
+                <!-- DASHBOARD PREVIEW -->
+                <div class="hero-preview">
+
+                    <div class="preview-glow"></div>
+
+                    <div class="preview-window">
+
+                        <div class="preview-top">
+                            <div class="window-dots">
+                                <span class="window-dot"></span>
+                                <span class="window-dot"></span>
+                                <span class="window-dot"></span>
+                            </div>
+                        </div>
+
+                        <div class="preview-body">
+
+                            <aside class="preview-sidebar">
+
+                                <div class="side-logo">
+                                    <div class="side-logo-icon">
+                                        B
+                                    </div>
+
+                                    Bayan
+                                </div>
+
+                                <div class="side-item active">
+                                    Overview
+                                </div>
+
+                                <div class="side-item">
+                                    Moderation
+                                </div>
+
+                                <div class="side-item">
+                                    Tickets
+                                </div>
+
+                                <div class="side-item">
+                                    Giveaways
+                                </div>
+
+                                <div class="side-item">
+                                    Tournaments
+                                </div>
+
+                                <div class="side-item">
+                                    Protection
+                                </div>
+
+                            </aside>
+
+
+                            <div class="preview-main">
+
+                                <div class="preview-title">
+                                    Server Overview
+                                </div>
+
+                                <div class="preview-muted">
+                                    Your Discord server at a glance.
+                                </div>
+
+
+                                <div class="preview-stats">
+
+                                    <div class="preview-stat">
+                                        <div class="preview-stat-label">
+                                            Members
+                                        </div>
+
+                                        <div class="preview-stat-value">
+                                            12.8K
+                                        </div>
+                                    </div>
+
+                                    <div class="preview-stat">
+                                        <div class="preview-stat-label">
+                                            Tickets
+                                        </div>
+
+                                        <div class="preview-stat-value">
+                                            247
+                                        </div>
+                                    </div>
+
+                                    <div class="preview-stat">
+                                        <div class="preview-stat-label">
+                                            Protection
+                                        </div>
+
+                                        <div class="preview-stat-value">
+                                            Active
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                                <div class="preview-panel">
+
+                                    <div class="preview-panel-title">
+                                        Server Protection
+                                    </div>
+
+                                    <div class="preview-muted">
+                                        Bayan security systems are active.
+                                    </div>
+
+                                    <div class="preview-bar">
+                                        <div class="preview-bar-fill"></div>
+                                    </div>
+
+                                </div>
+
+
+                                <div class="preview-panel">
+
+                                    <div class="preview-panel-title">
+                                        Recent Activity
+                                    </div>
+
+                                    <div class="preview-muted">
+                                        Moderation logs, tickets and
+                                        server events appear here.
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- STATS -->
+        <div class="stats reveal">
+
+            <div class="stat">
+                <div class="stat-number" data-target="50">0+</div>
+                <div class="stat-label">
+                    Powerful Features
+                </div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-number" data-target="24">0/7</div>
+                <div class="stat-label">
+                    Protection
+                </div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-number" data-target="99">0%</div>
+                <div class="stat-label">
+                    Reliability Goal
+                </div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-number">1</div>
+                <div class="stat-label">
+                    Bot for Everything
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- FEATURES -->
+        <section
+            id="features"
+            class="section"
+        >
+
+            <div class="section-header reveal">
+
+                <div class="section-label">
+                    FEATURES
+                </div>
+
+                <h2>
+                    Everything your server needs.
+                </h2>
+
+                <p>
+                    Bayan combines the tools your community needs
+                    into one clean and powerful experience.
+                </p>
+
+            </div>
+
+
+            <div class="features-grid">
+
+                <article class="feature reveal">
+                    <div class="feature-icon">M</div>
+
+                    <h3>
+                        Advanced Moderation
+                    </h3>
+
+                    <p>
+                        Ban, kick, timeout, warnings, message
+                        clearing, slowmode and powerful moderation
+                        tools.
+                    </p>
+                </article>
+
+
+                <article class="feature reveal">
+                    <div class="feature-icon">T</div>
+
+                    <h3>
+                        Ticket System
+                    </h3>
+
+                    <p>
+                        Professional support tickets with claiming,
+                        closing, categories and staff management.
+                    </p>
+                </article>
+
+
+                <article class="feature reveal">
+                    <div class="feature-icon">S</div>
+
+                    <h3>
+                        Server Protection
+                    </h3>
+
+                    <p>
+                        Protect your community with anti-spam,
+                        anti-link, anti-raid and anti-mention tools.
+                    </p>
+                </article>
+
+
+                <article class="feature reveal">
+                    <div class="feature-icon">G</div>
+
+                    <h3>
+                        Giveaways
+                    </h3>
+
+                    <p>
+                        Run clean and simple giveaways directly
+                        inside your Discord server.
+                    </p>
+                </article>
+
+
+                <article class="feature reveal">
+                    <div class="feature-icon">W</div>
+
+                    <h3>
+                        Welcome System
+                    </h3>
+
+                    <p>
+                        Welcome new members with customizable
+                        messages and automatic server actions.
+                    </p>
+                </article>
+
+
+                <article class="feature reveal">
+                    <div class="feature-icon">T</div>
+
+                    <h3>
+                        Tournament System
+                    </h3>
+
+                    <p>
+                        Create tournaments, manage players,
+                        generate brackets and track winners.
+                    </p>
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- PREMIUM -->
+        <section
+            id="premium"
+            class="section"
+        >
+
+            <div class="premium reveal">
+
+                <div class="premium-content">
+
+                    <div>
+
+                        <span class="premium-badge">
+                            BAYAN PREMIUM
+                        </span>
+
+                        <h2>
+                            Take your server
+                            further.
+                        </h2>
+
+                        <p class="premium-description">
+                            Unlock advanced tools and give your
+                            community a more powerful Bayan experience.
+                        </p>
+
+
+                        <div class="premium-list">
+
+                            <div>
+                                <span>✓</span>
+                                Advanced moderation
+                            </div>
+
+                            <div>
+                                <span>✓</span>
+                                Advanced server protection
+                            </div>
+
+                            <div>
+                                <span>✓</span>
+                                Premium dashboard controls
+                            </div>
+
+                            <div>
+                                <span>✓</span>
+                                Tournament features
+                            </div>
+
+                            <div>
+                                <span>✓</span>
+                                Priority support
+                            </div>
+
+                        </div>
+
+
+                        <div style="margin-top: 28px;">
+                            <a
+                                href="#pricing"
+                                class="button button-primary"
+                            >
+                                View Premium
+                            </a>
+                        </div>
+
+                    </div>
+
+
+                    <div class="premium-visual">
+
+                        <div class="orb-ring"></div>
+
+                        <div class="premium-orb"></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- PRICING -->
+        <section
+            id="pricing"
+            class="section"
+        >
+
+            <div class="section-header reveal">
+
+                <div class="section-label">
+                    PRICING
+                </div>
+
+                <h2>
+                    Simple pricing.
+                    Powerful features.
+                </h2>
+
+                <p>
+                    Start free and upgrade whenever your community
+                    needs more.
+                </p>
+
+            </div>
+
+
+            <div class="pricing-grid">
+
+
+                <!-- FREE -->
+                <article class="pricing-card reveal">
+
+                    <h3>
+                        Free
+                    </h3>
+
+                    <p class="pricing-card-description">
+                        Everything you need to get started.
+                    </p>
+
+
+                    <div class="price">
+                        <span class="price-value">
+                            $0
+                        </span>
+
+                        <span class="price-period">
+                            / month
+                        </span>
+                    </div>
+
+
+                    <ul class="pricing-features">
+
+                        <li>
+                            <span class="check">✓</span>
+                            Moderation commands
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Ticket system
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Welcome system
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Auto moderation
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Giveaways
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Basic dashboard
+                        </li>
+
+                    </ul>
+
+
+                    <a
+                        href="/login"
+                        class="pricing-button secondary"
+                    >
+                        Get Started
+                    </a>
+
+                </article>
+
+
+                <!-- PREMIUM -->
+                <article class="pricing-card featured reveal">
+
+                    <div class="popular">
+                        MOST POPULAR
+                    </div>
+
+                    <h3>
+                        Bayan Premium
+                    </h3>
+
+                    <p class="pricing-card-description">
+                        Unlock the full Bayan experience.
+                    </p>
+
+
+                    <div class="price">
+                        <span class="price-value">
+                            $4.99
+                        </span>
+
+                        <span class="price-period">
+                            / month
+                        </span>
+                    </div>
+
+
+                    <ul class="pricing-features">
+
+                        <li>
+                            <span class="check">✓</span>
+                            Everything in Free
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Advanced moderation
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Advanced tickets
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Advanced automod
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Custom embeds
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Advanced logs
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Tournament system
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Premium dashboard
+                        </li>
+
+                    </ul>
+
+
+                    <a
+                        href="/login"
+                        class="pricing-button primary"
+                    >
+                        Get Premium
+                    </a>
+
+                </article>
+
+
+                <!-- PREMIUM+ -->
+                <article class="pricing-card reveal">
+
+                    <h3>
+                        Bayan Premium+
+                    </h3>
+
+                    <p class="pricing-card-description">
+                        For larger and more advanced communities.
+                    </p>
+
+
+                    <div class="price">
+                        <span class="price-value">
+                            $9.99
+                        </span>
+
+                        <span class="price-period">
+                            / month
+                        </span>
+                    </div>
+
+
+                    <ul class="pricing-features">
+
+                        <li>
+                            <span class="check">✓</span>
+                            Everything in Premium
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Advanced protection
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Advanced analytics
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            More dashboard controls
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Early feature access
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Priority support
+                        </li>
+
+                    </ul>
+
+
+                    <a
+                        href="/login"
+                        class="pricing-button secondary"
+                    >
+                        Choose Premium+
+                    </a>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- FAQ -->
+        <section
+            id="faq"
+            class="section"
+        >
+
+            <div class="section-header reveal">
+
+                <div class="section-label">
+                    FAQ
+                </div>
+
+                <h2>
+                    Questions?
+                    We have answers.
+                </h2>
+
+                <p>
+                    A few things you might want to know about Bayan.
+                </p>
+
+            </div>
+
+
+            <div class="faq">
+
+
+                <div class="faq-item reveal">
+
+                    <button
+                        class="faq-question"
+                        type="button"
+                    >
+                        What is Bayan?
+
+                        <span class="faq-plus">
+                            +
+                        </span>
+                    </button>
+
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            Bayan is an all-in-one Discord bot designed
+                            to help communities manage moderation,
+                            tickets, protection, giveaways, tournaments
+                            and more.
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="faq-item reveal">
+
+                    <button
+                        class="faq-question"
+                        type="button"
+                    >
+                        Is Bayan free?
+
+                        <span class="faq-plus">
+                            +
+                        </span>
+                    </button>
+
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            Yes. Bayan has a free plan with core
+                            moderation, tickets, welcome tools,
+                            giveaways and other useful features.
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="faq-item reveal">
+
+                    <button
+                        class="faq-question"
+                        type="button"
+                    >
+                        What does Premium unlock?
+
+                        <span class="faq-plus">
+                            +
+                        </span>
+                    </button>
+
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            Premium unlocks additional dashboard
+                            controls, advanced moderation, protection,
+                            logs, tournament tools and other premium
+                            features.
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="faq-item reveal">
+
+                    <button
+                        class="faq-question"
+                        type="button"
+                    >
+                        Can I manage Bayan from a dashboard?
+
+                        <span class="faq-plus">
+                            +
+                        </span>
+                    </button>
+
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            Yes. Sign in with Discord to access the
+                            Bayan dashboard and manage supported
+                            server settings.
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="faq-item reveal">
+
+                    <button
+                        class="faq-question"
+                        type="button"
+                    >
+                        Is Bayan still being developed?
+
+                        <span class="faq-plus">
+                            +
+                        </span>
+                    </button>
+
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            Yes. Bayan is designed to continuously
+                            receive improvements, new tools and
+                            additional dashboard features.
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- CTA -->
+        <section class="cta reveal">
+
+            <h2>
+                Ready to upgrade
+                your server?
+            </h2>
+
+            <p>
+                Add Bayan to your Discord server and start using
+                powerful management tools today.
+            </p>
+
+            <a
+                href="/login"
+                class="button button-primary"
+            >
+                Add Bayan to Discord
+                <span>→</span>
+            </a>
+
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer>
+
+        <div>
+            © 2026 Bayan. All rights reserved.
+        </div>
+
+        <div class="footer-links">
+            <a href="/">
+                Home
+            </a>
+
+            <a href="#features">
+                Features
+            </a>
+
+            <a href="#pricing">
+                Pricing
+            </a>
+
+            <a href="/login">
+                Dashboard
+            </a>
+        </div>
+
+    </footer>
+
+
+    <script>
+
+        /* ================================
+           SCROLL REVEAL
+           ================================ */
+
+        const revealElements =
+            document.querySelectorAll(".reveal");
+
+        const revealObserver =
+            new IntersectionObserver(
+                (entries) => {
+
+                    entries.forEach((entry) => {
+
+                        if (entry.isIntersecting) {
+
+                            entry.target.classList.add(
+                                "visible"
+                            );
+
+                            revealObserver.unobserve(
+                                entry.target
+                            );
+                        }
+
+                    });
+
+                },
+                {
+                    threshold: 0.12
+                }
+            );
+
+
+        revealElements.forEach((element) => {
+            revealObserver.observe(element);
+        });
+
+
+        /* ================================
+           FAQ
+           ================================ */
+
+        document
+            .querySelectorAll(".faq-question")
+            .forEach((button) => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const item =
+                            button.closest(".faq-item");
+
+                        const wasOpen =
+                            item.classList.contains("open");
+
+                        document
+                            .querySelectorAll(".faq-item")
+                            .forEach((faq) => {
+                                faq.classList.remove("open");
+                            });
+
+                        if (!wasOpen) {
+                            item.classList.add("open");
+                        }
+
+                    }
+                );
+
+            });
+
+
+        /* ================================
+           NUMBER COUNTERS
+           ================================ */
+
+        const counterElements =
+            document.querySelectorAll(
+                ".stat-number[data-target]"
+            );
+
+        const counterObserver =
+            new IntersectionObserver(
+                (entries) => {
+
+                    entries.forEach((entry) => {
+
+                        if (!entry.isIntersecting) {
+                            return;
+                        }
+
+                        const element =
+                            entry.target;
+
+                        const target =
+                            Number(
+                                element.dataset.target
+                            );
+
+                        let current = 0;
+
+                        const duration = 1200;
+                        const start =
+                            performance.now();
+
+                        function updateCounter(now) {
+
+                            const progress =
+                                Math.min(
+                                    (now - start) /
+                                    duration,
+                                    1
+                                );
+
+                            const eased =
+                                1 -
+                                Math.pow(
+                                    1 - progress,
+                                    3
+                                );
+
+                            current =
+                                Math.floor(
+                                    target * eased
+                                );
+
+                            const suffix =
+                                target === 50
+                                    ? "+"
+                                    : "%";
+
+                            element.textContent =
+                                current + suffix;
+
+                            if (progress < 1) {
+                                requestAnimationFrame(
+                                    updateCounter
+                                );
+                            }
+
+                        }
+
+                        requestAnimationFrame(
+                            updateCounter
+                        );
+
+                        counterObserver.unobserve(
+                            element
+                        );
+
+                    });
+
+                },
+                {
+                    threshold: 0.7
+                }
+            );
+
+
+        counterElements.forEach((element) => {
+            counterObserver.observe(element);
+        });
+
+
+        /* ================================
+           MOUSE PARALLAX
+           ================================ */
+
+        const preview =
+            document.querySelector(".preview-window");
+
+        if (preview) {
+
+            document.addEventListener(
+                "mousemove",
+                (event) => {
+
+                    if (window.innerWidth < 800) {
+                        return;
+                    }
+
+                    const x =
+                        (event.clientX /
+                            window.innerWidth -
+                            0.5) * 2;
+
+                    const y =
+                        (event.clientY /
+                            window.innerHeight -
+                            0.5) * 2;
+
+                    preview.style.transform =
+                        `perspective(1300px)
+                         rotateX(${4 - y * 2}deg)
+                         rotateY(${x * 2}deg)`;
+
+                }
+            );
+
+        }
+
+
+        /* ================================
+           NAVBAR SCROLL EFFECT
+           ================================ */
+
+        const navbar =
+            document.querySelector(".navbar");
+
+        window.addEventListener(
+            "scroll",
+            () => {
+
+                if (window.scrollY > 20) {
+
+                    navbar.style.background =
+                        "rgba(7, 7, 11, 0.88)";
+
+                } else {
+
+                    navbar.style.background =
+                        "rgba(7, 7, 11, 0.68)";
+
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+</html>
