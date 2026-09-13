@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Bayan Owner Panel</title>
+
+    <link rel="stylesheet" href="/style.css">
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="nav-inner">
+
+        <a href="/" class="logo">
+            <span class="logo-icon">B</span>
+            Bayan
+        </a>
+
+        <div class="nav-buttons">
+
+            <a href="/dashboard" class="btn secondary">
+                Dashboard
+            </a>
+
+            <a href="/logout" class="btn secondary">
+                Logout
+            </a>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="dashboard-page">
+
+    <div class="dashboard-header">
+
+        <div>
+
+            <span class="eyebrow">
+                OWNER PANEL
+            </span>
+
+            <h1>
+                Bayan Owner Control
+            </h1>
+
+            <p>
+                Manage Premium access for servers.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <section class="dashboard-grid">
+
+        <article class="dashboard-card">
+
+            <div class="card-icon">
+                ⭐
+            </div>
+
+            <h2>Grant Premium</h2>
+
+            <p>
+                Give Premium to a server for a selected duration.
+            </p>
+
+            <input
+                id="guildId"
+                class="input"
+                placeholder="Server ID"
+            >
+
+            <input
+                id="guildName"
+                class="input"
+                placeholder="Server name"
+            >
+
+            <select
+                id="duration"
+                class="input"
+            >
+                <option value="7d">
+                    7 Days
+                </option>
+
+                <option value="30d">
+                    30 Days
+                </option>
+
+                <option value="90d">
+                    90 Days
+                </option>
+
+                <option value="lifetime">
+                    Lifetime
+                </option>
+            </select>
+
+            <button
+                class="btn primary full"
+                onclick="grantPremium()"
+            >
+                Grant Premium
+            </button>
+
+        </article>
+
+
+        <article class="dashboard-card">
+
+            <div class="card-icon">
+                🗑
+            </div>
+
+            <h2>Remove Premium</h2>
+
+            <p>
+                Remove Premium from a server.
+            </p>
+
+            <input
+                id="removeGuildId"
+                class="input"
+                placeholder="Server ID"
+            >
+
+            <button
+                class="btn secondary full"
+                onclick="removePremium()"
+            >
+                Remove Premium
+            </button>
+
+        </article>
+
+    </section>
+
+
+    <section class="dashboard-panel">
+
+        <div class="panel-header">
+
+            <div>
+                <h2>Premium Servers</h2>
+
+                <p class="muted">
+                    Servers currently receiving Premium.
+                </p>
+            </div>
+
+            <button
+                class="btn secondary"
+                onclick="loadPremium()"
+            >
+                Refresh
+            </button>
+
+        </div>
+
+        <div id="premiumList">
+            Loading...
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+async function checkOwner() {
+
+    const response =
+        await fetch("/api/me");
+
+    const data =
+        await response.json();
+
+    if (!data.loggedIn) {
+
+        window.location.href = "/login";
+
+        return false;
+
+    }
+
+    if (!data.isOwner) {
+
+        document.body.innerHTML = `
+            <div style="
+                min-height:100vh;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                background:#08080d;
+                color:white;
+                font-family:Arial;
+                text-align:center;
+            ">
+                <div>
+                    <h1>Access Denied</h1>
+                    <p>
+                        This area is restricted to the Bayan owner.
+                    </p>
+                    <a href="/dashboard">
+                        Return to Dashboard
+                    </a>
+                </div>
+            </div>
+        `;
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+
+async function grantPremium() {
+
+    const guildId =
+        document.getElementById("guildId").value.trim();
+
+    const guildName =
+        document.getElementById("guildName").value.trim();
+
+    const duration =
+        document.getElementById("duration").value;
+
+    if (!guildId) {
+
+        alert("Enter a Server ID.");
+
+        return;
+
+    }
+
+    const response =
+        await fetch(
+            "/api/owner/premium/grant",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    guildId,
+                    guildName,
+                    duration
+                })
+            }
+        );
+
+    const data =
+        await response.json();
+
+    alert(data.message || "Done.");
+
+    loadPremium();
+
+}
+
+
+async function removePremium() {
+
+    const guildId =
+        document
+            .getElementById("removeGuildId")
+            .value
+            .trim();
+
+    if (!guildId) {
+
+        alert("Enter a Server ID.");
+
+        return;
+
+    }
+
+    const response =
+        await fetch(
+            `/api/owner/premium/${guildId}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+    const data =
+        await response.json();
+
+    alert(data.message || "Done.");
+
+    loadPremium();
+
+}
+
+
+async function loadPremium() {
+
+    const container =
+        document.getElementById("premiumList");
+
+    try {
+
+        const response =
+            await fetch("/api/owner/premium");
+
+        const data =
+            await response.json();
+
+        if (!data.success) {
+
+            container.innerHTML =
+                `<p class="muted">Unable to load Premium servers.</p>`;
+
+            return;
+
+        }
+
+        if (!data.servers.length) {
+
+            container.innerHTML =
+                `<p class="muted">No Premium servers yet.</p>`;
+
+            return;
+
+        }
+
+        container.innerHTML =
+            data.servers
+                .map(server => `
+                    <div class="server-item">
+
+                        <div>
+                            <strong>
+                                ${escapeHtml(
+                                    server.guildName
+                                )}
+                            </strong>
+
+                            <span>
+                                ${server.guildId}
+                            </span>
+                        </div>
+
+                        <strong>
+                            ${server.duration}
+                        </strong>
+
+                    </div>
+                `)
+                .join("");
+
+    } catch (error) {
+
+        console.error(error);
+
+        container.innerHTML =
+            `<p class="muted">Error loading Premium.</p>`;
+
+    }
+
+}
+
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+(async () => {
+
+    const allowed =
+        await checkOwner();
+
+    if (allowed) {
+        loadPremium();
+    }
+
+})();
+
+</script>
+
+</body>
+</html>

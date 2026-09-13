@@ -1,485 +1,1274 @@
-require("dotenv").config();
-
 const express = require("express");
 const session = require("express-session");
+const dotenv = require("dotenv");
 const path = require("node:path");
+const crypto = require("node:crypto");
+
+const {
+    simulateCheckout,
+    getPremiumStatus
+} = require("./database/premium");
+
+dotenv.config();
 
 const app = express();
 
-const PORT = Number(process.env.PORT || 3000);
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = "0.0.0.0";
+const WEBSITE_DIR = __dirname;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// ==========================================
+// ENVIRONMENT
+// ==========================================
+
+const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
+
+const REDIRECT_URI =
+    process.env.DISCORD_REDIRECT_URI ||
+    "http://localhost:3000/auth/discord/callback";
+
+const OWNER_ID = process.env.BAYAN_OWNER_ID;
+
+const SESSION_SECRET =
+    process.env.SESSION_SECRET ||
+    crypto.randomBytes(32).toString("hex");
+
+const BOT_INVITE =
+    process.env.DISCORD_BOT_INVITE || "";
+
+// ==========================================
+// DISCORD API
+// ==========================================
+
+const DISCORD_API =
+    "https://discord.com/api/v10";
+
+// ==========================================
+// APP SETTINGS
+// ==========================================
+
+app.disable("x-powered-by");
+
+if (process.env.NODE_ENV === "production") {
+    app.set("trust proxy", 1);
+}
+
+// ==========================================
+// MIDDLEWARE
+// ==========================================
+
+app.use(express.json({
+    limit: "100kb"
+}));
+
+app.use(express.urlencoded({
+    extended: true,
+    limit: "100kb"
+}));
+
+// ==========================================
+// SECURITY HEADERS
+// ==========================================
+
+app.use((req, res, next) => {
+    res.setHeader(
+        "X-Content-Type-Options",
+        "nosniff"
+    );
+
+    res.setHeader(
+        "X-Frame-Options",
+        "SAMEORIGIN"
+    );
+
+    res.setHeader(
+        "Referrer-Policy",
+        "strict-origin-when-cross-origin"
+    );
+
+    res.setHeader(
+        "Permissions-Policy",
+        "camera=(), microphone=(), geolocation=()"
+    );
+
+    next();
+});
+
+// ==========================================
+// SIMPLE RATE LIMITER
+// ==========================================
+
+const rateLimits = new Map();
+
+function rateLimit({
+    windowMs = 60_000,
+    max = 60
+} = {}) {
+    return (req, res, next) => {
+
+        const ip =
+            req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+            req.socket.remoteAddress ||
+            "unknown";
+
+        const key =
+            `${ip}:${req.path}`;
+
+        const now = Date.now();
+
+        let record =
+            rateLimits.get(key);
+
+        if (!record || now > record.resetAt) {
+            record = {
+                count: 0,
+                resetAt: now + windowMs
+            };
+        }
+
+        record.count++;
+
+        rateLimits.set(key, record);
+
+        if (record.count > max) {
+            return res.status(429).json({
+                success: false,
+                error: "Too many requests. Please try again later."
+            });
+        }
+
+        next();
+    };
+}
+
+app.use(
+    "/api",
+    rateLimit({
+        windowMs: 60_000,
+        max: 120
+    })
+);
+
+// Cleanup rate limiter occasionally
+setInterval(() => {
+
+    const now = Date.now();
+
+    for (const [key, value] of rateLimits.entries()) {
+        if (now > value.resetAt) {
+            rateLimits.delete(key);
+        }
+    }
+
+}, 5 * 60 * 1000).unref();
+
+// ==========================================
+// SESSION
+// ==========================================
 
 app.use(
     session({
-        secret: process.env.SESSION_SECRET || "bayan-secret-change-me",
+        name: "bayan.sid",
+
+        secret: SESSION_SECRET,
+
         resave: false,
+
         saveUninitialized: false,
+
         cookie: {
             httpOnly: true,
+
+            secure:
+                process.env.NODE_ENV === "production",
+
             sameSite: "lax",
-            secure: process.env.NODE_ENV === "production",
-            maxAge: 1000 * 60 * 60 * 24 * 7
+
+            maxAge:
+                7 * 24 * 60 * 60 * 1000
         }
     })
 );
 
-// Serve website files
-app.use(express.static(path.join(__dirname, "public")));
+// ==========================================
+// STATIC WEBSITE
+// ==========================================
 
-// Homepage
-app.get("/", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "public", "index.html")
-    );
-});
+app.use(
+    express.static(WEBSITE_DIR, {
+        index: false
+    })
+);
 
-// Dashboard
-app.get("/dashboard", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "public", "dashboard.html")
-    );
-});
+// ==========================================
+// HELPERS
+// ==========================================
 
-// Owner panel
-app.get("/owner", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "public", "owner.html")
-    );
-});
-
-// Health check
-app.get("/health", (req, res) => {
-    res.json({
-        status: "online",
-        name: "Bayan Website"
-    });
-});
-
-// Discord login
-app.get("/login", (req, res) => {
-    const clientId = process.env.DISCORD_CLIENT_ID;
-    const clientSecret = process.env.DISCORD_CLIENT_SECRET;
-
-    if (!clientId || !clientSecret) {
-        return res.status(500).send(
-            "Discord OAuth is not configured."
-        );
-    }
-
-    const redirectUri =
-        process.env.DISCORD_REDIRECT_URI ||
-        `http://localhost:${PORT}/auth/discord/callback`;
-
-    const params = new URLSearchParams({
-        client_id: clientId,
-        response_type: "code",
-        scope: "identify guilds",
-        redirect_uri: redirectUri
-    });
-
-    res.redirect(
-        `https://discord.com/oauth2/authorize?${params}`
-    );
-});
-
-// Discord OAuth callback
-app.get("/auth/discord/callback", async (req, res) => {
-    const code = req.query.code;
-
-    if (!code) {
-        return res.redirect("/?login=cancelled");
-    }
-
-    try {
-        const redirectUri =
-            process.env.DISCORD_REDIRECT_URI ||
-            `http://localhost:${PORT}/auth/discord/callback`;
-
-        const tokenResponse = await fetch(
-            "https://discord.com/api/oauth2/token",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type":
-                        "application/x-www-form-urlencoded"
-                },
-                body: new URLSearchParams({
-                    client_id:
-                        process.env.DISCORD_CLIENT_ID,
-
-                    client_secret:
-                        process.env.DISCORD_CLIENT_SECRET,
-
-                    grant_type:
-                        "authorization_code",
-
-                    code,
-                    redirect_uri: redirectUri
-                })
-            }
-        );
-
-        if (!tokenResponse.ok) {
-            throw new Error(
-                `Discord token request failed: ${tokenResponse.status}`
-            );
-        }
-
-        const tokenData =
-            await tokenResponse.json();
-
-        const userResponse = await fetch(
-            "https://discord.com/api/users/@me",
-            {
-                headers: {
-                    Authorization:
-                        `Bearer ${tokenData.access_token}`
-                }
-            }
-        );
-
-        if (!userResponse.ok) {
-            throw new Error(
-                "Failed to get Discord user."
-            );
-        }
-
-        const user =
-            await userResponse.json();
-
-        const guildResponse = await fetch(
-            "https://discord.com/api/users/@me/guilds",
-            {
-                headers: {
-                    Authorization:
-                        `Bearer ${tokenData.access_token}`
-                }
-            }
-        );
-
-        const guilds =
-            guildResponse.ok
-                ? await guildResponse.json()
-                : [];
-
-        req.session.user = {
-            id: user.id,
-            username: user.username,
-            globalName: user.global_name,
-            avatar: user.avatar,
-
-            guilds: guilds.filter(guild => {
-                const permissions =
-                    BigInt(guild.permissions || "0");
-
-                const ADMINISTRATOR = 1n << 3n;
-                const MANAGE_GUILD = 1n << 5n;
-
-                return (
-                    (permissions &
-                        ADMINISTRATOR) !== 0n ||
-                    (permissions &
-                        MANAGE_GUILD) !== 0n
-                );
-            })
-        };
-
-        res.redirect("/dashboard.html");
-
-    } catch (error) {
-        console.error(
-            "Discord login error:",
-            error
-        );
-
-        res.status(500).send(
-            "Discord login failed."
-        );
-    }
-});
-
-// Logout
-app.get("/logout", (req, res) => {
-    req.session.destroy(() => {
-        res.redirect("/");
-    });
-});
-
-// Website configuration
-app.get("/api/config", (req, res) => {
-    res.json({
-        loggedIn: Boolean(req.session.user),
-
-        user:
-            req.session.user || null,
-
-        botInvite:
-            process.env.DISCORD_BOT_INVITE || "#",
-
-        isOwner:
-            Boolean(
-                req.session.user &&
-                req.session.user.id ===
-                    process.env.BAYAN_OWNER_ID
-            )
-    });
-});
-
-// Temporary settings storage
-const serverSettings = new Map();
-
-function defaultSettings() {
-    return {
-        moderation: true,
-        autoMod: true,
-        antiSpam: true,
-        antiLinks: false,
-        welcome: false,
-        welcomeChannel: "",
-        tickets: true,
-        ticketRole: "",
-        logs: true,
-        notifications: true
-    };
+function isLoggedIn(req) {
+    return Boolean(req.session?.user);
 }
 
-// Get settings
-app.get(
-    "/api/settings/:guildId",
-    (req, res) => {
-        const guildId =
-            req.params.guildId;
+function isOwner(req) {
+    return Boolean(
+        OWNER_ID &&
+        req.session?.user?.id === OWNER_ID
+    );
+}
 
-        if (!serverSettings.has(guildId)) {
-            serverSettings.set(
-                guildId,
-                defaultSettings()
-            );
-        }
-
-        res.json(
-            serverSettings.get(guildId)
-        );
-    }
-);
-
-// Save settings
-app.post(
-    "/api/settings/:guildId",
-    (req, res) => {
-        const guildId =
-            req.params.guildId;
-
-        const current =
-            serverSettings.get(guildId) ||
-            defaultSettings();
-
-        const updated = {
-            ...current,
-            ...req.body
-        };
-
-        serverSettings.set(
-            guildId,
-            updated
-        );
-
-        res.json({
-            success: true,
-            settings: updated
-        });
-    }
-);
-
-// Premium storage
-const premiumServers = new Map();
-
-// Owner protection
-function requireOwner(req, res, next) {
-    if (!req.session.user) {
+function requireLogin(req, res, next) {
+    if (!isLoggedIn(req)) {
         return res.status(401).json({
-            error: "Not logged in"
-        });
-    }
-
-    if (
-        req.session.user.id !==
-        process.env.BAYAN_OWNER_ID
-    ) {
-        return res.status(403).json({
-            error: "Owner access required"
+            success: false,
+            error: "You must log in with Discord first."
         });
     }
 
     next();
 }
 
-// Get premium servers
-app.get(
-    "/api/owner/premium",
-    requireOwner,
-    (req, res) => {
-        const result = [];
+function requireOwner(req, res, next) {
+    if (!isOwner(req)) {
+        return res.status(403).json({
+            success: false,
+            error: "Owner access required."
+        });
+    }
 
-        for (
-            const [guildId, data]
-            of premiumServers
+    next();
+}
+
+function sendPage(res, filename) {
+    return res.sendFile(
+        path.join(WEBSITE_DIR, filename)
+    );
+}
+
+function discordPermissionsAllowManagement(guild) {
+
+    const permissions =
+        BigInt(guild.permissions || "0");
+
+    const ADMINISTRATOR = 1n << 3n;
+
+    const MANAGE_GUILD = 1n << 5n;
+
+    return (
+        (permissions & ADMINISTRATOR) !== 0n ||
+        (permissions & MANAGE_GUILD) !== 0n
+    );
+}
+
+function userCanManageGuild(req, guildId) {
+
+    if (!req.session?.managedGuilds) {
+        return false;
+    }
+
+    return req.session.managedGuilds.some(
+        guild => guild.id === guildId
+    );
+}
+
+async function discordRequest(
+    endpoint,
+    accessToken,
+    options = {}
+) {
+    const response = await fetch(
+        `${DISCORD_API}${endpoint}`,
+        {
+            ...options,
+
+            headers: {
+                Authorization:
+                    `Bearer ${accessToken}`,
+
+                "Content-Type":
+                    "application/json",
+
+                ...(options.headers || {})
+            }
+        }
+    );
+
+    const text =
+        await response.text();
+
+    let data;
+
+    try {
+        data =
+            text ? JSON.parse(text) : {};
+    } catch {
+        data = {
+            raw: text
+        };
+    }
+
+    if (!response.ok) {
+        const error =
+            new Error(
+                `Discord API returned ${response.status}`
+            );
+
+        error.status =
+            response.status;
+
+        error.data =
+            data;
+
+        throw error;
+    }
+
+    return data;
+}
+
+// ==========================================
+// PAGE ROUTES
+// ==========================================
+
+app.get("/", (req, res) => {
+    return sendPage(
+        res,
+        "index.html"
+    );
+});
+
+app.get("/dashboard", (req, res) => {
+    return sendPage(
+        res,
+        "dashboard.html"
+    );
+});
+
+app.get("/owner", (req, res) => {
+    return sendPage(
+        res,
+        "owner.html"
+    );
+});
+
+app.get("/pricing", (req, res) => {
+    return sendPage(
+        res,
+        "pricing.html"
+    );
+});
+
+// ==========================================
+// HEALTH
+// ==========================================
+
+app.get("/health", (req, res) => {
+
+    res.json({
+        success: true,
+
+        status: "online",
+
+        service: "Bayan Website",
+
+        time: new Date().toISOString(),
+
+        uptime:
+            Math.floor(process.uptime()),
+
+        environment:
+            process.env.NODE_ENV || "development"
+    });
+});
+
+// ==========================================
+// CONFIG
+// ==========================================
+
+app.get("/api/config", (req, res) => {
+
+    res.json({
+        success: true,
+
+        botInvite:
+            BOT_INVITE,
+
+        discordConfigured:
+            Boolean(
+                CLIENT_ID &&
+                CLIENT_SECRET &&
+                REDIRECT_URI
+            ),
+
+        ownerConfigured:
+            Boolean(OWNER_ID),
+
+        environment:
+            process.env.NODE_ENV || "development"
+    });
+});
+
+// ==========================================
+// DISCORD LOGIN
+// ==========================================
+
+app.get(
+    "/login",
+    rateLimit({
+        windowMs: 60_000,
+        max: 20
+    }),
+    (req, res) => {
+
+        if (
+            !CLIENT_ID ||
+            !CLIENT_SECRET
         ) {
-            result.push({
-                guildId,
-                ...data
-            });
+            return res.status(500).send(
+                "Discord OAuth is not configured."
+            );
         }
 
-        res.json(result);
+        const state =
+            crypto.randomBytes(24)
+                .toString("hex");
+
+        req.session.oauthState =
+            state;
+
+        const params =
+            new URLSearchParams({
+                client_id: CLIENT_ID,
+
+                response_type: "code",
+
+                redirect_uri:
+                    REDIRECT_URI,
+
+                scope:
+                    "identify guilds",
+
+                state
+            });
+
+        const url =
+            `https://discord.com/oauth2/authorize?${params.toString()}`;
+
+        return res.redirect(url);
     }
 );
 
-// Grant premium
-app.post(
-    "/api/owner/premium/grant",
-    requireOwner,
-    (req, res) => {
-        const {
-            guildId,
-            guildName,
-            duration
-        } = req.body;
+// ==========================================
+// DISCORD CALLBACK
+// ==========================================
 
-        if (!guildId) {
-            return res.status(400).json({
-                error: "Guild ID is required"
+app.get(
+    "/auth/discord/callback",
+    async (req, res) => {
+
+        try {
+
+            const {
+                code,
+                state,
+                error
+            } = req.query;
+
+            if (error) {
+                return res.redirect(
+                    "/?login=cancelled"
+                );
+            }
+
+            if (!code) {
+                return res.status(400).send(
+                    "Missing Discord authorization code."
+                );
+            }
+
+            if (
+                !state ||
+                !req.session.oauthState ||
+                state !== req.session.oauthState
+            ) {
+                return res.status(400).send(
+                    "Invalid OAuth state."
+                );
+            }
+
+            delete req.session.oauthState;
+
+            // ----------------------------------
+            // Exchange authorization code
+            // ----------------------------------
+
+            const body =
+                new URLSearchParams({
+                    client_id: CLIENT_ID,
+
+                    client_secret:
+                        CLIENT_SECRET,
+
+                    grant_type:
+                        "authorization_code",
+
+                    code,
+
+                    redirect_uri:
+                        REDIRECT_URI
+                });
+
+            const tokenResponse =
+                await fetch(
+                    `${DISCORD_API}/oauth2/token`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/x-www-form-urlencoded"
+                        },
+
+                        body
+                    }
+                );
+
+            const tokenData =
+                await tokenResponse.json();
+
+            if (!tokenResponse.ok) {
+                console.error(
+                    "Discord token error:",
+                    tokenData
+                );
+
+                return res.status(401).send(
+                    "Discord login failed."
+                );
+            }
+
+            const accessToken =
+                tokenData.access_token;
+
+            // ----------------------------------
+            // Get Discord user
+            // ----------------------------------
+
+            const user =
+                await discordRequest(
+                    "/users/@me",
+                    accessToken
+                );
+
+            // ----------------------------------
+            // Get Discord servers
+            // ----------------------------------
+
+            const guilds =
+                await discordRequest(
+                    "/users/@me/guilds",
+                    accessToken
+                );
+
+            // ----------------------------------
+            // Filter manageable servers
+            // ----------------------------------
+
+            const managedGuilds =
+                guilds
+                    .filter(
+                        discordPermissionsAllowManagement
+                    )
+                    .map(guild => ({
+                        id: guild.id,
+
+                        name: guild.name,
+
+                        icon:
+                            guild.icon,
+
+                        owner:
+                            Boolean(guild.owner),
+
+                        permissions:
+                            guild.permissions
+                    }));
+
+            // ----------------------------------
+            // Store session
+            // ----------------------------------
+
+            req.session.user = {
+                id: user.id,
+
+                username:
+                    user.username,
+
+                globalName:
+                    user.global_name ||
+                    user.username,
+
+                avatar:
+                    user.avatar
+            };
+
+            req.session.accessToken =
+                accessToken;
+
+            req.session.managedGuilds =
+                managedGuilds;
+
+            req.session.loginAt =
+                new Date().toISOString();
+
+            return res.redirect(
+                "/dashboard"
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Discord OAuth callback error:",
+                error
+            );
+
+            return res.status(500).send(
+                "Discord login failed. Check the server console."
+            );
+        }
+    }
+);
+
+// ==========================================
+// LOGOUT
+// ==========================================
+
+app.get("/logout", (req, res) => {
+
+    req.session.destroy(() => {
+
+        res.clearCookie(
+            "bayan.sid"
+        );
+
+        return res.redirect("/");
+    });
+});
+
+// ==========================================
+// CURRENT USER
+// ==========================================
+
+app.get(
+    "/api/me",
+    requireLogin,
+    (req, res) => {
+
+        return res.json({
+            success: true,
+
+            user:
+                req.session.user,
+
+            isOwner:
+                isOwner(req),
+
+            loginAt:
+                req.session.loginAt
+        });
+    }
+);
+
+// ==========================================
+// USER SERVERS
+// ==========================================
+
+app.get(
+    "/api/servers",
+    requireLogin,
+    (req, res) => {
+
+        const guilds =
+            req.session.managedGuilds || [];
+
+        return res.json({
+            success: true,
+
+            servers: guilds.map(guild => ({
+                id: guild.id,
+
+                name: guild.name,
+
+                icon: guild.icon,
+
+                owner: guild.owner
+            }))
+        });
+    }
+);
+
+// ==========================================
+// SINGLE SERVER
+// ==========================================
+
+app.get(
+    "/api/servers/:guildId",
+    requireLogin,
+    (req, res) => {
+
+        const guild =
+            (req.session.managedGuilds || [])
+                .find(
+                    server =>
+                        server.id ===
+                        req.params.guildId
+                );
+
+        if (!guild) {
+            return res.status(403).json({
+                success: false,
+                error:
+                    "You do not have permission to manage this server."
             });
         }
 
-        let expiresAt = null;
+        return res.json({
+            success: true,
 
-        if (duration !== "lifetime") {
-            const days = Number(duration);
+            server: guild
+        });
+    }
+);
 
-            if (
-                !Number.isFinite(days) ||
-                days <= 0
-            ) {
+// ==========================================
+// PREMIUM STATUS
+// ==========================================
+
+app.get(
+    "/api/premium/:guildId",
+    requireLogin,
+    (req, res) => {
+
+        const guildId =
+            req.params.guildId;
+
+        if (
+            !userCanManageGuild(
+                req,
+                guildId
+            )
+        ) {
+            return res.status(403).json({
+                success: false,
+
+                error:
+                    "You do not have permission to manage this server."
+            });
+        }
+
+        try {
+
+            const status =
+                getPremiumStatus(
+                    guildId
+                );
+
+            return res.json({
+                success: true,
+
+                guildId,
+
+                ...status
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Premium status error:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+
+                premium: false,
+
+                error:
+                    "Unable to check Premium status."
+            });
+        }
+    }
+);
+
+// ==========================================
+// TEST PREMIUM CHECKOUT
+// ==========================================
+//
+// IMPORTANT:
+// This is a local/test activation system.
+// It does NOT process real money.
+// ==========================================
+
+app.post(
+    "/api/test/checkout",
+    requireLogin,
+    (req, res) => {
+
+        try {
+
+            const {
+                guildId,
+                planKey
+            } = req.body;
+
+            if (!guildId || !planKey) {
                 return res.status(400).json({
-                    error: "Invalid duration"
+                    success: false,
+
+                    error:
+                        "Missing server or Premium plan."
                 });
             }
 
-            expiresAt =
-                Date.now() +
-                days *
-                    24 *
-                    60 *
-                    60 *
-                    1000;
-        }
+            // Never trust a client-provided guild ID.
+            if (
+                !userCanManageGuild(
+                    req,
+                    guildId
+                )
+            ) {
+                return res.status(403).json({
+                    success: false,
 
-        premiumServers.set(
-            guildId,
-            {
-                guildName:
-                    guildName ||
-                    "Unknown Server",
-
-                plan: "Premium",
-
-                grantedBy:
-                    req.session.user.id,
-
-                grantedAt:
-                    Date.now(),
-
-                expiresAt
+                    error:
+                        "You cannot activate Premium for this server."
+                });
             }
-        );
 
-        res.json({
-            success: true
-        });
-    }
-);
+            const result =
+                simulateCheckout({
+                    guildId,
 
-// Remove premium
-app.post(
-    "/api/owner/premium/remove",
-    requireOwner,
-    (req, res) => {
-        const {
-            guildId
-        } = req.body;
+                    userDiscordId:
+                        req.session.user.id,
 
-        premiumServers.delete(
-            guildId
-        );
+                    planKey
+                });
 
-        res.json({
-            success: true
-        });
-    }
-);
+            return res.json(result);
 
-// Check premium
-app.get(
-    "/api/premium/:guildId",
-    (req, res) => {
-        const data =
-            premiumServers.get(
-                req.params.guildId
+        } catch (error) {
+
+            console.error(
+                "Test checkout error:",
+                error
             );
 
-        if (!data) {
-            return res.json({
-                active: false
+            return res.status(400).json({
+                success: false,
+
+                error:
+                    error.message ||
+                    "Checkout failed."
             });
+        }
+    }
+);
+
+// ==========================================
+// OWNER CHECK
+// ==========================================
+
+app.get(
+    "/api/owner/status",
+    requireLogin,
+    (req, res) => {
+
+        return res.json({
+            success: true,
+
+            owner:
+                isOwner(req)
+        });
+    }
+);
+
+// ==========================================
+// OWNER PREMIUM GRANT
+// ==========================================
+//
+// Grants Premium without payment.
+// ==========================================
+
+app.post(
+    "/api/owner/premium",
+    requireLogin,
+    requireOwner,
+    (req, res) => {
+
+        try {
+
+            const {
+                guildId,
+                planKey = "lifetime"
+            } = req.body;
+
+            if (!guildId) {
+                return res.status(400).json({
+                    success: false,
+
+                    error:
+                        "Missing server ID."
+                });
+            }
+
+            /*
+             * Owner grants intentionally use
+             * the same Premium activation engine
+             * but mark the user as the owner.
+             *
+             * This remains a TEST/ADMIN grant.
+             */
+
+            const result =
+                simulateCheckout({
+                    guildId,
+
+                    userDiscordId:
+                        req.session.user.id,
+
+                    planKey
+                });
+
+            return res.json({
+                success: true,
+
+                type: "owner_grant",
+
+                ...result
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Owner Premium grant error:",
+                error
+            );
+
+            return res.status(400).json({
+                success: false,
+
+                error:
+                    error.message ||
+                    "Unable to grant Premium."
+            });
+        }
+    }
+);
+
+// ==========================================
+// OWNER PREMIUM REMOVE
+// ==========================================
+
+app.delete(
+    "/api/owner/premium/:guildId",
+    requireLogin,
+    requireOwner,
+    (req, res) => {
+
+        try {
+
+            const Database =
+                require("better-sqlite3");
+
+            const db =
+                new Database(
+                    path.join(
+                        __dirname,
+                        "database",
+                        "bayan.db"
+                    )
+                );
+
+            const result =
+                db.prepare(`
+                    UPDATE subscriptions
+                    SET
+                        status = 'cancelled',
+                        updated_at =
+                            CURRENT_TIMESTAMP
+                    WHERE
+                        guild_id = ?
+                    AND
+                        status = 'active'
+                `).run(
+                    req.params.guildId
+                );
+
+            db.close();
+
+            return res.json({
+                success: true,
+
+                removed:
+                    result.changes > 0
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Owner Premium removal error:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+
+                error:
+                    "Unable to remove Premium."
+            });
+        }
+    }
+);
+
+// ==========================================
+// DASHBOARD SUMMARY
+// ==========================================
+
+app.get(
+    "/api/dashboard",
+    requireLogin,
+    (req, res) => {
+
+        const servers =
+            req.session.managedGuilds || [];
+
+        return res.json({
+            success: true,
+
+            user:
+                req.session.user,
+
+            isOwner:
+                isOwner(req),
+
+            serverCount:
+                servers.length,
+
+            servers
+        });
+    }
+);
+
+// ==========================================
+// BOT INVITE
+// ==========================================
+
+app.get(
+    "/api/bot/invite",
+    (req, res) => {
+
+        return res.json({
+            success: true,
+
+            url:
+                BOT_INVITE
+        });
+    }
+);
+
+// ==========================================
+// 404
+// ==========================================
+
+app.use((req, res) => {
+
+    if (
+        req.path.startsWith("/api/")
+    ) {
+        return res.status(404).json({
+            success: false,
+
+            error:
+                "API endpoint not found."
+        });
+    }
+
+    return res.status(404).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Bayan - 404</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    background: #0b0d12;
+                    color: white;
+                    font-family: Arial, sans-serif;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                    text-align: center;
+                }
+
+                h1 {
+                    font-size: 72px;
+                    margin: 0;
+                }
+
+                p {
+                    color: #aeb4c0;
+                }
+
+                a {
+                    color: #5865f2;
+                    text-decoration: none;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div>
+                <h1>404</h1>
+
+                <p>
+                    الصفحة التي تبحث عنها غير موجودة.
+                </p>
+
+                <a href="/">
+                    العودة إلى Bayan
+                </a>
+            </div>
+        </body>
+        </html>
+    `);
+});
+
+// ==========================================
+// ERROR HANDLER
+// ==========================================
+
+app.use(
+    (error, req, res, next) => {
+
+        console.error(
+            "Unhandled server error:",
+            error
+        );
+
+        if (res.headersSent) {
+            return next(error);
         }
 
         if (
-            data.expiresAt &&
-            Date.now() >=
-                data.expiresAt
+            req.path.startsWith("/api/")
         ) {
-            premiumServers.delete(
-                req.params.guildId
-            );
+            return res.status(500).json({
+                success: false,
 
-            return res.json({
-                active: false
+                error:
+                    "Internal server error."
             });
         }
 
-        res.json({
-            active: true,
-            ...data
-        });
+        return res.status(500).send(
+            "Internal server error."
+        );
     }
 );
 
-// Start server
-app.listen(
-    PORT,
-    "0.0.0.0",
-    () => {
-        console.log(
-            "=============================="
-        );
+// ==========================================
+// START SERVER
+// ==========================================
+
+const server =
+    app.listen(
+        PORT,
+        HOST,
+        error => {
+
+            if (error) {
+                console.error(
+                    "Failed to start server:",
+                    error
+                );
+
+                process.exit(1);
+            }
+
+            console.log("");
+            console.log(
+                "======================================"
+            );
+            console.log(
+                "           BAYAN WEBSITE"
+            );
+            console.log(
+                "======================================"
+            );
+
+            console.log(
+                `Server: http://${HOST}:${PORT}`
+            );
+
+            console.log(
+                `Website: ${WEBSITE_DIR}`
+            );
+
+            console.log(
+                `OAuth: ${
+                    CLIENT_ID &&
+                    CLIENT_SECRET
+                        ? "CONFIGURED"
+                        : "NOT CONFIGURED"
+                }`
+            );
+
+            console.log(
+                `Owner: ${
+                    OWNER_ID
+                        ? "CONFIGURED"
+                        : "NOT CONFIGURED"
+                }`
+            );
+
+            console.log(
+                `Premium DB: ENABLED`
+            );
+
+            console.log(
+                "======================================"
+            );
+            console.log("");
+        }
+    );
+
+// ==========================================
+// GRACEFUL SHUTDOWN
+// ==========================================
+
+function shutdown(signal) {
+
+    console.log(
+        `${signal} received. Shutting down...`
+    );
+
+    server.close(() => {
 
         console.log(
-            "       BAYAN WEBSITE"
+            "Bayan Website stopped."
         );
 
-        console.log(
-            "=============================="
-        );
+        process.exit(0);
+    });
+}
 
-        console.log(
-            `Server running on port ${PORT}`
-        );
+process.on(
+    "SIGINT",
+    () => shutdown("SIGINT")
+);
 
-        console.log(
-            "=============================="
-        );
-    }
+process.on(
+    "SIGTERM",
+    () => shutdown("SIGTERM")
 );

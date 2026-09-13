@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Bayan Dashboard</title>
+
+    <link rel="stylesheet" href="/style.css">
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="nav-inner">
+
+        <a href="/" class="logo">
+            <span class="logo-icon">B</span>
+            Bayan
+        </a>
+
+        <div class="nav-buttons">
+
+            <a href="/" class="btn secondary">
+                Home
+            </a>
+
+            <a href="/logout" class="btn secondary">
+                Logout
+            </a>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="dashboard-page">
+
+    <div class="dashboard-header">
+
+        <div>
+
+            <span class="eyebrow">
+                DASHBOARD
+            </span>
+
+            <h1 id="welcome">
+                Welcome to Bayan
+            </h1>
+
+            <p id="userText">
+                Loading your Discord account...
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <section class="dashboard-grid">
+
+        <article class="dashboard-card">
+
+            <div class="card-icon">
+                🏠
+            </div>
+
+            <h2>Your Servers</h2>
+
+            <p>
+                Manage your Discord servers from one place.
+            </p>
+
+            <button
+                class="btn primary"
+                onclick="loadServers()"
+            >
+                Load Servers
+            </button>
+
+        </article>
+
+
+        <article class="dashboard-card">
+
+            <div class="card-icon">
+                ⭐
+            </div>
+
+            <h2>Premium</h2>
+
+            <p id="premiumText">
+                Select a server to check Premium.
+            </p>
+
+            <button
+                class="btn secondary"
+                onclick="showPremium()"
+            >
+                Check Premium
+            </button>
+
+        </article>
+
+
+        <article class="dashboard-card">
+
+            <div class="card-icon">
+                ⚙
+            </div>
+
+            <h2>Configuration</h2>
+
+            <p>
+                Configure welcome messages, logs,
+                automod and tickets.
+            </p>
+
+            <button
+                class="btn secondary"
+                onclick="showSettings()"
+            >
+                Configure
+            </button>
+
+        </article>
+
+
+        <article class="dashboard-card">
+
+            <div class="card-icon">
+                🎉
+            </div>
+
+            <h2>Giveaways</h2>
+
+            <p>
+                Create and manage community giveaways.
+            </p>
+
+            <button
+                class="btn secondary"
+                onclick="comingSoon()"
+            >
+                Open Giveaways
+            </button>
+
+        </article>
+
+
+        <article class="dashboard-card">
+
+            <div class="card-icon">
+                🏆
+            </div>
+
+            <h2>Tournaments</h2>
+
+            <p>
+                Manage tournament players and brackets.
+            </p>
+
+            <button
+                class="btn secondary"
+                onclick="comingSoon()"
+            >
+                Open Tournaments
+            </button>
+
+        </article>
+
+
+        <article class="dashboard-card">
+
+            <div class="card-icon">
+                📋
+            </div>
+
+            <h2>Logs</h2>
+
+            <p>
+                Review your server activity and moderation logs.
+            </p>
+
+            <button
+                class="btn secondary"
+                onclick="comingSoon()"
+            >
+                Open Logs
+            </button>
+
+        </article>
+
+    </section>
+
+
+    <section class="dashboard-panel">
+
+        <h2>Server Management</h2>
+
+        <div id="servers">
+            <p class="muted">
+                Click "Load Servers" to view your servers.
+            </p>
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+let selectedServer = null;
+
+
+async function loadUser() {
+
+    try {
+
+        const response =
+            await fetch("/api/me");
+
+        const data =
+            await response.json();
+
+        if (!data.loggedIn) {
+
+            window.location.href = "/login";
+
+            return;
+
+        }
+
+        const name =
+            data.user.global_name ||
+            data.user.username;
+
+        document.getElementById("welcome").textContent =
+            `Welcome, ${name}`;
+
+        document.getElementById("userText").textContent =
+            `Discord ID: ${data.user.id}`;
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+}
+
+
+async function loadServers() {
+
+    const container =
+        document.getElementById("servers");
+
+    container.innerHTML = `
+        <div class="server-item">
+            <strong>Discord server access</strong>
+            <span>
+                Server discovery will connect to the Bayan bot backend.
+            </span>
+        </div>
+    `;
+
+}
+
+
+async function showPremium() {
+
+    if (!selectedServer) {
+
+        document.getElementById("premiumText").textContent =
+            "Select a server first.";
+
+        return;
+
+    }
+
+    const response =
+        await fetch(
+            `/api/server/${selectedServer}/premium`
+        );
+
+    const data =
+        await response.json();
+
+    if (data.premium.active) {
+
+        document.getElementById("premiumText").textContent =
+            "Premium is active.";
+
+    } else {
+
+        document.getElementById("premiumText").textContent =
+            "Premium is not active.";
+
+    }
+
+}
+
+
+async function showSettings() {
+
+    alert(
+        "Server configuration is ready to connect to the Bayan bot."
+    );
+
+}
+
+
+function comingSoon() {
+
+    alert(
+        "This dashboard module will be connected to the Bayan bot backend next."
+    );
+
+}
+
+
+loadUser();
+
+</script>
+
+</body>
+</html>
