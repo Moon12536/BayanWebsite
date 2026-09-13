@@ -1,0 +1,2095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Bayan Premium</title>
+
+    <meta
+        name="description"
+        content="Upgrade your Discord server with Bayan Premium."
+    >
+
+    <link rel="stylesheet" href="/style.css">
+
+    <style>
+        :root {
+            --bg: #07070b;
+            --bg-soft: #0d0d14;
+            --card: #11111a;
+            --card-hover: #171722;
+            --border: rgba(255,255,255,.08);
+            --text: #ffffff;
+            --muted: #9696a7;
+            --accent: #5865f2;
+            --accent-2: #7c6cff;
+            --success: #43d17b;
+            --danger: #ff5d73;
+            --shadow: 0 25px 80px rgba(0,0,0,.45);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(
+                    circle at 50% -10%,
+                    rgba(88,101,242,.22),
+                    transparent 35%
+                ),
+                radial-gradient(
+                    circle at 10% 30%,
+                    rgba(124,108,255,.08),
+                    transparent 25%
+                ),
+                var(--bg);
+
+            color: var(--text);
+            font-family:
+                Inter,
+                ui-sans-serif,
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button,
+        select {
+            font: inherit;
+        }
+
+        .container {
+            width: min(1180px, calc(100% - 40px));
+            margin: auto;
+        }
+
+        /* NAVBAR */
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+
+            border-bottom: 1px solid var(--border);
+
+            background: rgba(7,7,11,.72);
+            backdrop-filter: blur(20px);
+        }
+
+        .nav-inner {
+            min-height: 72px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+
+            font-weight: 900;
+            letter-spacing: -.03em;
+            font-size: 20px;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--accent),
+                    var(--accent-2)
+                );
+
+            box-shadow:
+                0 10px 30px rgba(88,101,242,.35);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 26px;
+
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .nav-links a {
+            transition: .2s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: white;
+        }
+
+        .nav-login {
+            padding: 10px 16px;
+
+            border: 1px solid var(--border);
+            border-radius: 10px;
+
+            background: rgba(255,255,255,.04);
+        }
+
+        /* HERO */
+
+        .hero {
+            text-align: center;
+            padding: 100px 0 55px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            padding: 8px 13px;
+
+            border: 1px solid rgba(124,108,255,.25);
+            border-radius: 999px;
+
+            background: rgba(88,101,242,.09);
+
+            color: #c7c9ff;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 12px var(--success);
+        }
+
+        .hero h1 {
+            max-width: 850px;
+            margin: 22px auto 16px;
+
+            font-size: clamp(42px, 7vw, 76px);
+            line-height: .98;
+            letter-spacing: -.065em;
+        }
+
+        .hero h1 span {
+            background:
+                linear-gradient(
+                    90deg,
+                    #ffffff,
+                    #9fa5ff,
+                    #7c6cff
+                );
+
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            max-width: 680px;
+            margin: auto;
+
+            color: var(--muted);
+            font-size: 17px;
+            line-height: 1.7;
+        }
+
+        /* SERVER SELECTOR */
+
+        .server-box {
+            max-width: 720px;
+            margin: 38px auto 0;
+
+            padding: 20px;
+
+            border: 1px solid var(--border);
+            border-radius: 18px;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(255,255,255,.045),
+                    rgba(255,255,255,.018)
+                );
+
+            box-shadow: var(--shadow);
+        }
+
+        .server-label {
+            display: block;
+            margin-bottom: 9px;
+
+            color: #c7c7d5;
+
+            font-size: 13px;
+            font-weight: 700;
+            text-align: left;
+        }
+
+        .server-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .server-select {
+            width: 100%;
+            padding: 14px 15px;
+
+            border: 1px solid var(--border);
+            border-radius: 12px;
+
+            outline: none;
+
+            background: #0a0a10;
+            color: white;
+
+            cursor: pointer;
+        }
+
+        .server-select:focus {
+            border-color: var(--accent);
+            box-shadow:
+                0 0 0 3px rgba(88,101,242,.15);
+        }
+
+        .server-status {
+            margin-top: 12px;
+
+            color: var(--muted);
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .server-status strong {
+            color: white;
+        }
+
+        /* PRICING */
+
+        .pricing-section {
+            padding: 30px 0 90px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+
+            gap: 18px;
+
+            align-items: stretch;
+        }
+
+        .plan {
+            position: relative;
+
+            display: flex;
+            flex-direction: column;
+
+            min-height: 520px;
+
+            padding: 27px;
+
+            border: 1px solid var(--border);
+            border-radius: 22px;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(255,255,255,.045),
+                    rgba(255,255,255,.015)
+                );
+
+            box-shadow: 0 18px 60px rgba(0,0,0,.22);
+
+            transition:
+                transform .25s ease,
+                border-color .25s ease,
+                background .25s ease;
+        }
+
+        .plan:hover {
+            transform: translateY(-7px);
+
+            border-color:
+                rgba(124,108,255,.35);
+
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(255,255,255,.07),
+                    rgba(255,255,255,.02)
+                );
+        }
+
+        .plan.featured {
+            border-color:
+                rgba(88,101,242,.55);
+
+            background:
+                radial-gradient(
+                    circle at 50% 0%,
+                    rgba(88,101,242,.16),
+                    transparent 50%
+                ),
+                rgba(17,17,26,.95);
+
+            box-shadow:
+                0 25px 80px
+                rgba(88,101,242,.14);
+        }
+
+        .popular {
+            position: absolute;
+
+            top: 16px;
+            right: 16px;
+
+            padding: 6px 9px;
+
+            border-radius: 999px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--accent),
+                    var(--accent-2)
+                );
+
+            color: white;
+
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+
+        .plan-icon {
+            width: 48px;
+            height: 48px;
+
+            display: grid;
+            place-items: center;
+
+            margin-bottom: 20px;
+
+            border-radius: 14px;
+
+            background: rgba(88,101,242,.12);
+
+            font-size: 21px;
+        }
+
+        .plan h2 {
+            margin-bottom: 7px;
+
+            font-size: 21px;
+            letter-spacing: -.025em;
+        }
+
+        .plan-description {
+            min-height: 48px;
+
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .price {
+            margin: 22px 0 5px;
+
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: -.055em;
+        }
+
+        .price small {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0;
+        }
+
+        .duration {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .features {
+            display: grid;
+            gap: 12px;
+
+            margin: 25px 0;
+
+            list-style: none;
+        }
+
+        .features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+
+            color: #c8c8d5;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .check {
+            flex: 0 0 auto;
+
+            width: 18px;
+            height: 18px;
+
+            display: grid;
+            place-items: center;
+
+            margin-top: 1px;
+
+            border-radius: 50%;
+
+            background: rgba(67,209,123,.12);
+            color: var(--success);
+
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .plan-button {
+            width: 100%;
+
+            margin-top: auto;
+
+            padding: 13px 16px;
+
+            border: 1px solid var(--border);
+            border-radius: 12px;
+
+            background: rgba(255,255,255,.05);
+
+            color: white;
+
+            font-weight: 800;
+            font-size: 13px;
+
+            cursor: pointer;
+
+            transition: .2s ease;
+        }
+
+        .plan-button:hover {
+            background: rgba(255,255,255,.09);
+            transform: translateY(-1px);
+        }
+
+        .plan.featured .plan-button {
+            border-color: transparent;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--accent),
+                    var(--accent-2)
+                );
+
+            box-shadow:
+                0 12px 30px
+                rgba(88,101,242,.25);
+        }
+
+        .plan-button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* FEATURES */
+
+        .included {
+            padding: 30px 0 100px;
+        }
+
+        .section-heading {
+            max-width: 700px;
+            margin: 0 auto 42px;
+
+            text-align: center;
+        }
+
+        .section-heading h2 {
+            font-size: 36px;
+            letter-spacing: -.045em;
+        }
+
+        .section-heading p {
+            margin-top: 10px;
+
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
+
+            gap: 16px;
+        }
+
+        .feature-card {
+            padding: 25px;
+
+            border: 1px solid var(--border);
+            border-radius: 18px;
+
+            background: rgba(255,255,255,.025);
+        }
+
+        .feature-card-icon {
+            width: 42px;
+            height: 42px;
+
+            display: grid;
+            place-items: center;
+
+            margin-bottom: 17px;
+
+            border-radius: 12px;
+
+            background: rgba(88,101,242,.12);
+
+            font-size: 18px;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .feature-card p {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        /* FAQ */
+
+        .faq {
+            padding: 20px 0 100px;
+        }
+
+        .faq-list {
+            max-width: 800px;
+            margin: auto;
+
+            display: grid;
+            gap: 10px;
+        }
+
+        details {
+            border: 1px solid var(--border);
+            border-radius: 15px;
+
+            background: rgba(255,255,255,.025);
+
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 19px 20px;
+
+            cursor: pointer;
+
+            font-size: 14px;
+            font-weight: 800;
+
+            list-style: none;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details p {
+            padding: 0 20px 20px;
+
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        /* MODAL */
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+
+            display: none;
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+
+            background: rgba(0,0,0,.72);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-card {
+            width: min(500px, 100%);
+
+            padding: 28px;
+
+            border: 1px solid var(--border);
+            border-radius: 22px;
+
+            background: #101017;
+
+            box-shadow:
+                0 40px 120px rgba(0,0,0,.65);
+        }
+
+        .modal-card h2 {
+            margin-bottom: 9px;
+
+            font-size: 24px;
+            letter-spacing: -.035em;
+        }
+
+        .modal-card p {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .modal-plan {
+            margin: 22px 0;
+
+            padding: 18px;
+
+            border: 1px solid var(--border);
+            border-radius: 14px;
+
+            background: rgba(255,255,255,.035);
+        }
+
+        .modal-plan strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .modal-plan span {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .modal-button {
+            padding: 13px;
+
+            border: 1px solid var(--border);
+            border-radius: 11px;
+
+            background: rgba(255,255,255,.04);
+            color: white;
+
+            cursor: pointer;
+            font-weight: 800;
+        }
+
+        .modal-button.primary {
+            border-color: transparent;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--accent),
+                    var(--accent-2)
+                );
+        }
+
+        /* TOAST */
+
+        .toast {
+            position: fixed;
+
+            right: 22px;
+            bottom: 22px;
+
+            z-index: 800;
+
+            max-width: 360px;
+
+            padding: 15px 18px;
+
+            border: 1px solid var(--border);
+            border-radius: 13px;
+
+            background: #11111a;
+
+            box-shadow:
+                0 20px 70px rgba(0,0,0,.5);
+
+            color: white;
+
+            font-size: 13px;
+            line-height: 1.5;
+
+            transform:
+                translateY(30px);
+
+            opacity: 0;
+            pointer-events: none;
+
+            transition: .25s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-color:
+                rgba(67,209,123,.35);
+        }
+
+        .toast.error {
+            border-color:
+                rgba(255,93,115,.35);
+        }
+
+        /* FOOTER */
+
+        footer {
+            padding: 35px 0;
+
+            border-top: 1px solid var(--border);
+
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 1050px) {
+            .pricing-grid {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 760px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding-top: 70px;
+            }
+
+            .pricing-grid,
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .plan {
+                min-height: auto;
+            }
+
+            .server-row {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width:
+                    min(
+                        100% - 24px,
+                        1180px
+                    );
+            }
+
+            .hero h1 {
+                font-size: 43px;
+            }
+
+            .modal-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+
+    <header class="navbar">
+        <div class="container nav-inner">
+
+            <a href="/" class="brand">
+                <span class="brand-icon">B</span>
+                Bayan
+            </a>
+
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/pricing" class="active">
+                    Premium
+                </a>
+                <a href="/#features">Features</a>
+
+                <a href="/login" class="nav-login">
+                    Login with Discord
+                </a>
+            </nav>
+
+        </div>
+    </header>
+
+
+    <!-- HERO -->
+
+    <main>
+
+        <section class="hero">
+
+            <div class="container">
+
+                <div class="badge">
+                    <span class="badge-dot"></span>
+                    Bayan Premium
+                </div>
+
+                <h1>
+                    Give your server
+                    <span>more power.</span>
+                </h1>
+
+                <p>
+                    Unlock premium server tools, advanced
+                    automation and more powerful Bayan features.
+                    Choose the plan that fits your community.
+                </p>
+
+
+                <!-- SERVER SELECTOR -->
+
+                <div class="server-box">
+
+                    <label
+                        class="server-label"
+                        for="serverSelect"
+                    >
+                        Select your Discord server
+                    </label>
+
+                    <div class="server-row">
+
+                        <select
+                            id="serverSelect"
+                            class="server-select"
+                        >
+                            <option value="">
+                                Loading your servers...
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <div
+                        id="serverStatus"
+                        class="server-status"
+                    >
+                        Login with Discord to select
+                        a server.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- PRICING -->
+
+        <section class="pricing-section">
+
+            <div class="container">
+
+                <div class="pricing-grid">
+
+
+                    <!-- TRIAL -->
+
+                    <article class="plan">
+
+                        <div class="plan-icon">
+                            ✦
+                        </div>
+
+                        <h2>
+                            Trial
+                        </h2>
+
+                        <p class="plan-description">
+                            Try Bayan Premium before
+                            upgrading your server.
+                        </p>
+
+                        <div class="price">
+                            Free
+                        </div>
+
+                        <div class="duration">
+                            7 days
+                        </div>
+
+                        <ul class="features">
+
+                            <li>
+                                <span class="check">✓</span>
+                                Premium server access
+                            </li>
+
+                            <li>
+                                <span class="check">✓</span>
+                                Advanced Bayan features
+                            </li>
+
+                            <li>
+                                <span class="check">✓</span>
+                                Dashboard controls
+                            </li>
+
+                            <li>
+                                <span class="check">✓</span>
+                                7-day access
+                            </li>
+
+                        </ul>
+
+                        <button
+                            class="plan-button"
+                            onclick="openCheckout('trial')"
+                        >
+                            Start Trial
+                        </button>
+
+                    </article>
+
+
+                    <!-- MONTHLY -->
+
+                    <article class="plan featured">
+
+                        <div class="popular">
+                            Most Popular
+                        </div>
+
+                        <div class="plan-icon">
+                            ★
+                        </div>
+
+                        <h2>
+                            Monthly
+                        </h2>
+
+                        <p class="plan-description">
+                            The perfect option for active
+                            Discord communities.
+                        </p>
+
+                        <div class="price">
+                            $9.99
+                        </div>
+
+                        <div class="duration">
+                            30 days
+                        </div>
+
+                        <ul class="features">
+
+                            <li>
+                                <span class="check">✓</span>
+                                All Premium features
+                            </li>
+
+                            <li>
+                                <span class="check">✓</span>
+                                Advanced automation
+                            </li>
+
+                            <li>
+                                <span class="check">✓</span>
+                                Premium server tools
+                            </li>
+
+                            <li>
+                                <span class="check">✓</span>
+                                30-day access
+                            </li>
+
+                        </ul>
+
+                        <button
+                            class="plan-button"
+                            onclick="openCheckout('monthly')"
+                        >
+                            Upgrade Monthly
+                        </button>
+
+                    </article>
+
+
+                    <!-- QUARTERLY -->
+
+                    <article class="plan">
+
+                        <div class="plan-icon">
+                            ◆
+                        </div>
+
+                        <h2>
+                            Quarterly
+                        </h2>
+
+                        <p class="plan-description">
+                            Longer access with a better
+                            overall value.
+                        </p>
+
+                        <div class="price">
+                            $24.99
+                        </div>
+
+                        <div class="duration">
+                            90 days
+                        </div>
+
+                        <ul class="features">
+
+                            <li>
+                                <span class="check">✓</span>
+                                All Premium features
+                            </li>
+
+                            <li>
+                                <span class="check">✓</span>
+                                Advanced automation
+                            </li>
+
+                            <li>
+                                <span class="check">✓</span>
+                                Premium server tools
+                            </li>
+
+                            <li>
+                                <span class="check">✓</span>
+                                90-day access
+                            </li>
+
+                        </ul>
+
+                        <button
+                            class="plan-button"
+                            onclick="openCheckout('quarterly')"
+                        >
+                            Choose Quarterly
+                        </button>
+
+                    </article>
+
+
+                    <!-- LIFETIME -->
+
+                    <article class="plan">
+
+                        <div class="plan-icon">
+                            ♛
+                        </div>
+
+                        <h2>
+                            Lifetime
+                        </h2>
+
+                        <p class="plan-description">
+                            One upgrade. Permanent Premium
+                            access for your server.
+                        </p>
+
+                        <div class="price">
+                            $99.99
+                        </div>
+
+                        <div class="duration">
+                            Lifetime
+                        </div>
+
+                        <ul class="features">
+
+                            <li>
+                                <span class="check">✓</span>
+                                All Premium features
+                            </li>
+
+                            <li>
+                                <span class="check">✓</span>
+                                Advanced automation
+                            </li>
+
+                            <li>
+                                <span class="check">✓</span>
+                                Premium server tools
+                            </li>
+
+                            <li>
+                                <span class="check">✓</span>
+                                Lifetime access
+                            </li>
+
+                        </ul>
+
+                        <button
+                            class="plan-button"
+                            onclick="openCheckout('lifetime')"
+                        >
+                            Choose Lifetime
+                        </button>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- FEATURES -->
+
+        <section class="included">
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <h2>
+                        Premium gives you more
+                    </h2>
+
+                    <p>
+                        Built for communities that want
+                        more control, automation and
+                        customization.
+                    </p>
+
+                </div>
+
+
+                <div class="feature-grid">
+
+                    <div class="feature-card">
+
+                        <div class="feature-card-icon">
+                            ⚡
+                        </div>
+
+                        <h3>
+                            Advanced Automation
+                        </h3>
+
+                        <p>
+                            Unlock more powerful automated
+                            server systems through Bayan.
+                        </p>
+
+                    </div>
+
+
+                    <div class="feature-card">
+
+                        <div class="feature-card-icon">
+                            🛡
+                        </div>
+
+                        <h3>
+                            Advanced Protection
+                        </h3>
+
+                        <p>
+                            More powerful moderation and
+                            protection tools for your community.
+                        </p>
+
+                    </div>
+
+
+                    <div class="feature-card">
+
+                        <div class="feature-card-icon">
+                            ⚙
+                        </div>
+
+                        <h3>
+                            More Controls
+                        </h3>
+
+                        <p>
+                            Manage your Premium features
+                            directly from the Bayan dashboard.
+                        </p>
+
+                    </div>
+
+
+                    <div class="feature-card">
+
+                        <div class="feature-card-icon">
+                            🎫
+                        </div>
+
+                        <h3>
+                            Better Tickets
+                        </h3>
+
+                        <p>
+                            Build a cleaner and more advanced
+                            support experience.
+                        </p>
+
+                    </div>
+
+
+                    <div class="feature-card">
+
+                        <div class="feature-card-icon">
+                            🎉
+                        </div>
+
+                        <h3>
+                            Premium Events
+                        </h3>
+
+                        <p>
+                            Unlock additional community
+                            automation and event tools.
+                        </p>
+
+                    </div>
+
+
+                    <div class="feature-card">
+
+                        <div class="feature-card-icon">
+                            📊
+                        </div>
+
+                        <h3>
+                            Server Dashboard
+                        </h3>
+
+                        <p>
+                            Control your Bayan configuration
+                            from one modern dashboard.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- FAQ -->
+
+        <section class="faq">
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <h2>
+                        Frequently asked questions
+                    </h2>
+
+                    <p>
+                        Everything you need to know
+                        about Bayan Premium.
+                    </p>
+
+                </div>
+
+
+                <div class="faq-list">
+
+                    <details>
+                        <summary>
+                            Can I change my Premium plan?
+                        </summary>
+
+                        <p>
+                            Yes. Your Premium status is
+                            managed per Discord server.
+                            The available upgrade options
+                            depend on the plan system configured
+                            by Bayan.
+                        </p>
+                    </details>
+
+
+                    <details>
+                        <summary>
+                            Does Premium apply to my account?
+                        </summary>
+
+                        <p>
+                            Premium is attached to the
+                            selected Discord server rather
+                            than your personal Discord account.
+                        </p>
+                    </details>
+
+
+                    <details>
+                        <summary>
+                            Can I manage multiple servers?
+                        </summary>
+
+                        <p>
+                            Yes. After logging in with Discord,
+                            you can select a server that your
+                            Discord account has permission to manage.
+                        </p>
+                    </details>
+
+
+                    <details>
+                        <summary>
+                            Is Lifetime really lifetime?
+                        </summary>
+
+                        <p>
+                            The Lifetime plan is designed to
+                            have no automatic expiration.
+                        </p>
+                    </details>
+
+
+                    <details>
+                        <summary>
+                            Can the owner grant Premium?
+                        </summary>
+
+                        <p>
+                            The Bayan owner dashboard can grant
+                            or remove Premium for servers without
+                            requiring the server owner to purchase
+                            a plan.
+                        </p>
+                    </details>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- CHECKOUT MODAL -->
+
+    <div
+        id="checkoutModal"
+        class="modal"
+    >
+
+        <div class="modal-card">
+
+            <h2>
+                Confirm Premium
+            </h2>
+
+            <p>
+                Review your selected server and plan
+                before continuing.
+            </p>
+
+            <div class="modal-plan">
+
+                <strong id="modalPlanName">
+                    Premium
+                </strong>
+
+                <span id="modalPlanDetails">
+                    Select a plan.
+                </span>
+
+            </div>
+
+            <div class="modal-actions">
+
+                <button
+                    class="modal-button"
+                    onclick="closeCheckout()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    class="modal-button primary"
+                    id="confirmCheckout"
+                    onclick="confirmCheckout()"
+                >
+                    Continue
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TOAST -->
+
+    <div
+        id="toast"
+        class="toast"
+    ></div>
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <div class="container">
+
+            Bayan • Discord Server Management
+
+        </div>
+
+    </footer>
+
+
+<script>
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATE
+    |--------------------------------------------------------------------------
+    */
+
+    let selectedPlan = null;
+
+    let servers = [];
+
+    /*
+    |--------------------------------------------------------------------------
+    | PREMIUM PLAN INFO
+    |--------------------------------------------------------------------------
+    */
+
+    const plans = {
+
+        trial: {
+            name: "7 Day Trial",
+            price: "Free",
+            duration: "7 days"
+        },
+
+        monthly: {
+            name: "30 Days",
+            price: "$9.99",
+            duration: "30 days"
+        },
+
+        quarterly: {
+            name: "90 Days",
+            price: "$24.99",
+            duration: "90 days"
+        },
+
+        lifetime: {
+            name: "Lifetime",
+            price: "$99.99",
+            duration: "Lifetime"
+        }
+
+    };
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ELEMENTS
+    |--------------------------------------------------------------------------
+    */
+
+    const serverSelect =
+        document.getElementById(
+            "serverSelect"
+        );
+
+    const serverStatus =
+        document.getElementById(
+            "serverStatus"
+        );
+
+    const modal =
+        document.getElementById(
+            "checkoutModal"
+        );
+
+    const modalPlanName =
+        document.getElementById(
+            "modalPlanName"
+        );
+
+    const modalPlanDetails =
+        document.getElementById(
+            "modalPlanDetails"
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOAD SERVERS
+    |--------------------------------------------------------------------------
+    */
+
+    async function loadServers() {
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/servers"
+                );
+
+            if (response.status === 401) {
+
+                serverSelect.innerHTML = `
+                    <option value="">
+                        Login with Discord first
+                    </option>
+                `;
+
+                serverStatus.innerHTML = `
+                    <strong>Not logged in.</strong>
+                    <a
+                        href="/login"
+                        style="color:#8c92ff"
+                    >
+                        Login with Discord
+                    </a>
+                    to manage Premium.
+                `;
+
+                return;
+            }
+
+            const data =
+                await response.json();
+
+            if (!data.success) {
+                throw new Error(
+                    data.error ||
+                    "Unable to load servers."
+                );
+            }
+
+            servers =
+                data.servers || [];
+
+            renderServers();
+
+        } catch (error) {
+
+            console.error(error);
+
+            serverSelect.innerHTML = `
+                <option value="">
+                    Unable to load servers
+                </option>
+            `;
+
+            serverStatus.textContent =
+                "Unable to load your Discord servers.";
+
+        }
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | RENDER SERVERS
+    |--------------------------------------------------------------------------
+    */
+
+    function renderServers() {
+
+        if (!servers.length) {
+
+            serverSelect.innerHTML = `
+                <option value="">
+                    No manageable servers found
+                </option>
+            `;
+
+            serverStatus.innerHTML =
+                "Your Discord account does not currently have a manageable server.";
+
+            return;
+        }
+
+
+        serverSelect.innerHTML = `
+            <option value="">
+                Choose a server...
+            </option>
+        `;
+
+
+        for (const server of servers) {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                server.id;
+
+            option.textContent =
+                server.name;
+
+            serverSelect.appendChild(
+                option
+            );
+
+        }
+
+        serverStatus.textContent =
+            "Choose the Discord server you want to upgrade.";
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SERVER CHANGE
+    |--------------------------------------------------------------------------
+    */
+
+    serverSelect.addEventListener(
+        "change",
+        async () => {
+
+            const guildId =
+                serverSelect.value;
+
+            if (!guildId) {
+
+                serverStatus.textContent =
+                    "Choose a server to continue.";
+
+                return;
+            }
+
+            await loadPremiumStatus(
+                guildId
+            );
+
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PREMIUM STATUS
+    |--------------------------------------------------------------------------
+    */
+
+    async function loadPremiumStatus(
+        guildId
+    ) {
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/premium/${encodeURIComponent(guildId)}`
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "Unable to check Premium."
+                );
+
+            }
+
+            if (data.premium?.premium) {
+
+                if (
+                    data.premium.lifetime
+                ) {
+
+                    serverStatus.innerHTML =
+                        "<strong>Premium active:</strong> Lifetime";
+
+                } else {
+
+                    const expiration =
+                        new Date(
+                            data.premium.expiresAt
+                        );
+
+                    serverStatus.innerHTML =
+                        `<strong>Premium active:</strong>
+                        ${data.premium.planName}
+                        • Expires
+                        ${expiration.toLocaleDateString()}`;
+
+                }
+
+            } else {
+
+                serverStatus.innerHTML =
+                    "<strong>Premium inactive.</strong> Choose a plan below.";
+
+            }
+
+        } catch (error) {
+
+            serverStatus.textContent =
+                error.message;
+
+        }
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | OPEN CHECKOUT
+    |--------------------------------------------------------------------------
+    */
+
+    function openCheckout(
+        planKey
+    ) {
+
+        const guildId =
+            serverSelect.value;
+
+        if (!guildId) {
+
+            showToast(
+                "Please login and select a Discord server first.",
+                "error"
+            );
+
+            window.scrollTo({
+                top: 250,
+                behavior: "smooth"
+            });
+
+            return;
+        }
+
+        selectedPlan =
+            planKey;
+
+        const plan =
+            plans[planKey];
+
+        if (!plan) {
+            return;
+        }
+
+        modalPlanName.textContent =
+            plan.name;
+
+        modalPlanDetails.textContent =
+            `${plan.price} • ${plan.duration}`;
+
+        modal.classList.add(
+            "open"
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CLOSE CHECKOUT
+    |--------------------------------------------------------------------------
+    */
+
+    function closeCheckout() {
+
+        modal.classList.remove(
+            "open"
+        );
+
+        selectedPlan = null;
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CONFIRM TEST CHECKOUT
+    |--------------------------------------------------------------------------
+    */
+
+    async function confirmCheckout() {
+
+        const guildId =
+            serverSelect.value;
+
+        if (!guildId || !selectedPlan) {
+
+            showToast(
+                "Select a server and plan first.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        const button =
+            document.getElementById(
+                "confirmCheckout"
+            );
+
+        button.disabled = true;
+        button.textContent =
+            "Activating...";
+
+
+        try {
+
+            /*
+             * This endpoint is intentionally
+             * the TEST checkout endpoint.
+             */
+
+            const response =
+                await fetch(
+                    "/api/test/checkout",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            guildId,
+                            planKey:
+                                selectedPlan
+                        })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "Premium activation failed."
+                );
+
+            }
+
+
+            closeCheckout();
+
+
+            showToast(
+                `Premium activated: ${data.planName}`,
+                "success"
+            );
+
+
+            await loadPremiumStatus(
+                guildId
+            );
+
+
+        } catch (error) {
+
+            showToast(
+                error.message,
+                "error"
+            );
+
+        } finally {
+
+            button.disabled = false;
+
+            button.textContent =
+                "Continue";
+
+        }
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TOAST
+    |--------------------------------------------------------------------------
+    */
+
+    let toastTimer;
+
+    function showToast(
+        message,
+        type = ""
+    ) {
+
+        const toast =
+            document.getElementById(
+                "toast"
+            );
+
+        toast.textContent =
+            message;
+
+        toast.className =
+            `toast show ${type}`;
+
+        clearTimeout(
+            toastTimer
+        );
+
+        toastTimer =
+            setTimeout(() => {
+
+                toast.className =
+                    "toast";
+
+            }, 4500);
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CLOSE MODAL ON BACKDROP
+    |--------------------------------------------------------------------------
+    */
+
+    modal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target === modal
+            ) {
+
+                closeCheckout();
+
+            }
+
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ESCAPE KEY
+    |--------------------------------------------------------------------------
+    */
+
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Escape"
+            ) {
+
+                closeCheckout();
+
+            }
+
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | START
+    |--------------------------------------------------------------------------
+    */
+
+    loadServers();
+
+</script>
+
+</body>
+</html>
